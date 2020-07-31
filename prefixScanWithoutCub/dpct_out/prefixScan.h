@@ -137,11 +137,11 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
 #ifdef DPCPP_COMPATIBILITY_TEMP
 // see
 // https://stackoverflow.com/questions/40021086/can-i-obtain-the-amount-of-allocated-dynamic-shared-memory-from-within-a-kernel/40021087#40021087
-__dpct_inline__ unsigned dynamic_smem_size() {
+/*__dpct_inline__ unsigned dynamic_smem_size() {
   unsigned ret;
   asm volatile("mov.u32 %0, %dynamic_smem_size;" : "=r"(ret));
   return ret;
-}
+}*/
 #endif
 
 // in principle not limited....
@@ -153,7 +153,7 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   volatile T *co = ico;
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  assert(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size()); // size of psum below
+  //assert(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size()); // size of psum below
 #endif
   assert(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >= size);
   // first each block does a scan

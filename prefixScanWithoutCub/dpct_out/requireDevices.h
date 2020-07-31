@@ -5,7 +5,7 @@
  * These functions are meant to be called only from unit tests.
  */
 namespace cms {
-  namespace cudatest {
+  namespace oneapitest {
     /// In presence of CUDA devices, return true; otherwise print message and return false
     bool testDevices();
 
