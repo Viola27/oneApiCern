@@ -1,0 +1,14 @@
+---
+MainSourceFile:  '/afs/cern.ch/user/v/vcavalli/private/without_cub/dpct_out/cuda_assert.h'
+Replacements:
+  - FilePath:        '/afs/cern.ch/user/v/vcavalli/private/without_cub/cuda_assert.h'
+    Offset:          176
+    Length:          13
+    ReplacementText: DPCPP_COMPATIBILITY_TEMP
+  - FilePath:        '/afs/cern.ch/user/v/vcavalli/private/without_cub/cuda_assert.h'
+    Offset:          370
+    Length:          0
+    ReplacementText: '#include <CL/sycl.hpp>
+#include <dpct/dpct.hpp>
+'
+...

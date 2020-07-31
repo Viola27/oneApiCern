@@ -1,0 +1,7 @@
+[
+    {
+        "command": "nvcc -c  -std=c++11 -D__CUDACC__=1 prefixScan_t.cu",
+        "directory": "/afs/cern.ch/user/v/vcavalli/private/without_cub",
+        "file": "/afs/cern.ch/user/v/vcavalli/private/without_cub/prefixScan_t.cu"
+    }
+]

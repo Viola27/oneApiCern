@@ -1,0 +1,14 @@
+---
+MainSourceFile:  '/afs/cern.ch/user/v/vcavalli/private/without_cub/dpct_out/cudaCompat.h'
+Replacements:
+  - FilePath:        '/afs/cern.ch/user/v/vcavalli/private/without_cub/cudaCompat.h'
+    Offset:          0
+    Length:          0
+    ReplacementText: '#include <CL/sycl.hpp>
+#include <dpct/dpct.hpp>
+'
+  - FilePath:        '/afs/cern.ch/user/v/vcavalli/private/without_cub/cudaCompat.h'
+    Offset:          219
+    Length:          10
+    ReplacementText: CL_SYCL_LANGUAGE_VERSION
+...
