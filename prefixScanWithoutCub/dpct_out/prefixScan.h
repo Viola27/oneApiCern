@@ -64,7 +64,7 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
 #ifdef DPCPP_COMPATIBILITY_TEMP
   assert(ws);
   assert(size <= 1024);
-  assert(0 == blockDim.x % 32);
+  assert(0 == item_ct1.get_local_range().get(2) % 32);
   auto first = item_ct1.get_local_id(2);
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
@@ -106,7 +106,7 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
 #ifdef DPCPP_COMPATIBILITY_TEMP
   assert(ws);
   assert(size <= 1024);
-  assert(0 == blockDim.x % 32);
+  assert(0 == item_ct1.get_local_range().get(2) % 32);
   auto first = item_ct1.get_local_id(2);
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
@@ -153,9 +153,9 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   volatile T *co = ico;
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  assert(sizeof(T) * gridDim.x <= dynamic_smem_size()); // size of psum below
+  assert(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size()); // size of psum below
 #endif
-  assert(blockDim.x * gridDim.x >= size);
+  assert(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >= size);
   // first each block does a scan
   int off = item_ct1.get_local_range().get(2) * item_ct1.get_group(2);
   if (size - off > 0)
@@ -178,7 +178,7 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   if (!(*isLastBlockDone))
     return;
 
-  assert(int(gridDim.x) == *pc);
+  assert(int(item_ct1.get_group_range().get(2)) == *pc);
 
   // good each block has done its work and now we are left in last block
 
