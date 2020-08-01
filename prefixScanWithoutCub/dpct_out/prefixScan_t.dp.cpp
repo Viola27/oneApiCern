@@ -151,7 +151,7 @@ void verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
 int main() {
   dpct::device_ext &dev_ct1 = dpct::get_current_device();
   sycl::queue &q_ct1 = dev_ct1.default_queue();
-  cms::cudatest::requireDevices();
+  //cms::oneapitest::requireDevices();
 
   std::cout << "warp level" << std::endl;
   std::cout << "warp 32" << std::endl;
