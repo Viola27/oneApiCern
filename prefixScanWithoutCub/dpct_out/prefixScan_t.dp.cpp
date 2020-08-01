@@ -32,15 +32,13 @@ void SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   blockPrefixScan(c, size, ws, item_ct1);
 
   if (!(1 == c[0])) {
-    stdd::cerr << "Assertion failed during testWarpPrefixScan (file "
-                  "'prefixScan_t.dp.cpp)\nAborting...\n"
-               << std::endl;
+    stream_ct1 << "Assertion failed during testPrefixScan (file "
+                  "'prefixScan_t.dp.cpp)\nAborting...\n";
     abort();
   }
   if (!(1 == co[0])) {
-    stdd::cerr << "Assertion failed during testWarpPrefixScan (file "
-                  "'prefixScan_t.dp.cpp)\nAborting...\n"
-               << std::endl;
+    stream_ct1 << "Assertion failed during testPrefixScan (file "
+                  "'prefixScan_t.dp.cpp)\nAborting...\n";
     abort();
   }
   for (auto i = first + 1; i < size; i += item_ct1.get_local_range().get(2)) {
@@ -49,21 +47,18 @@ void SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
       stream_ct1 << format_traits<float>::failed_msg;
     }
     if (!(c[i] == c[i - 1] + 1)) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+      stream_ct1 << "Assertion failed during testPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n";
       abort();
     }
     if (!(c[i] == i + 1)) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+      stream_ct1 << "Assertion failed during testPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n";
       abort();
     }
     if (!(c[i] = co[i])) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+      stream_ct1 << "Assertion failed during testPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n";
       abort();
     }
   }
@@ -73,9 +68,8 @@ template <typename T>
 void SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
                                       sycl::stream stream_ct1, T *c, T *co) {
   if (!(size <= 32)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+    stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+                 "'prefixScan_t.dp.cpp)\nAborting...\n";
     abort();
   }
 
@@ -88,36 +82,31 @@ void SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   item_ct1.barrier();
 
   if (!(1 == c[0])) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+    stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+                 "'prefixScan_t.dp.cpp)\nAborting...\n";
     abort();
   }
   if (!(1 == co[0])) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+    stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+                 "'prefixScan_t.dp.cpp)\nAborting...\n";
     abort();
   }
   if (i != 0) {
     if (c[i] != c[i - 1] + 1)
       stream_ct1 << format_traits<int>::failed_msg;
     if (!(c[i] == c[i - 1] + 1)) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+      stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n";
       abort();
     }
     if (!(c[i] == i + 1)) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+      stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n";
       abort();
     }
     if (!(c[i] = co[i])) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+      stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n";
       abort();
     }
   }
@@ -139,9 +128,8 @@ void verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
            item_ct1.get_local_id(2);
   if (i < n)
     if (!(v[i] == i + 1)) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+      stream_ct1 << "Assertion failed during 'verify' (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n";
       abort();
     }
   if (i == 0)
@@ -344,7 +332,7 @@ int main() {
                          });
       });
     } catch (std::exception &e) {
-      std::cerr << e.what();
+      stream_ct1 << e.what();
     }
 
     try {

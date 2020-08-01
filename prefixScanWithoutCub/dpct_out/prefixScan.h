@@ -62,22 +62,13 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
 #endif
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  if (!(ws)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(ws)) { // aggiungere il messaggio di errore!
     abort();
   }
-  if (!(size <= 1024)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(size <= 1024)) { // aggiungere il messaggio di errore!
     abort();
   }
-  if (!(0 == item_ct1.get_local_range().get(2) % 32)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(0 == item_ct1.get_local_range().get(2) % 32)) { // aggiungere il messaggio di errore!
     abort();
   }
   auto first = item_ct1.get_local_id(2);
@@ -124,22 +115,13 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
 #endif
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  if (!(ws)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(ws)) { // aggiungere il messaggio di errore!
     abort();
   }
-  if (!(size <= 1024)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(size <= 1024)) { // aggiungere il messaggio di errore!
     abort();
   }
-  if (!(0 == item_ct1.get_local_range().get(2) % 32)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(0 == item_ct1.get_local_range().get(2) % 32)) { // aggiungere il messaggio di errore!
     abort();
   }
   auto first = item_ct1.get_local_id(2);
@@ -193,20 +175,14 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   volatile T *co = ico;
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  if (!(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size())) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size())) { // aggiungere il messaggio di errore!
     abort();
   }
   // assert(sizeof(T) * item_ct1.get_group_range().get(2) <=
   // dynamic_smem_size()); // size of psum below
 #endif
   if (!(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >=
-        size)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+        size)) { // aggiungere il messaggio di errore!
     abort();
   }
   // first each block does a scan
@@ -231,10 +207,7 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   if (!(*isLastBlockDone))
     return;
 
-  if (!(int(item_ct1.get_group_range().get(2)) == *pc)) {
-    std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"
-              << std::endl;
+  if (!(int(item_ct1.get_group_range().get(2)) == *pc)) { // aggiungere il messaggio di errore!
     abort();
   }
 
