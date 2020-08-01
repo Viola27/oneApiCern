@@ -1,6 +1,7 @@
 #include <CL/sycl.hpp>
 #include <dpct/dpct.hpp>
 #include <iostream>
+#include <stdlib.h>
 
 //#include "cudaCheck.h"
 #include "prefixScan.h"
@@ -30,23 +31,53 @@ void SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   blockPrefixScan(c, co, size, ws, item_ct1);
   blockPrefixScan(c, size, ws, item_ct1);
 
-  assert(1 == c[0]);
-  assert(1 == co[0]);
+  if (!(1 == c[0])) {
+    stdd::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+               << std::endl;
+    abort();
+  }
+  if (!(1 == co[0])) {
+    stdd::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+               << std::endl;
+    abort();
+  }
   for (auto i = first + 1; i < size; i += item_ct1.get_local_range().get(2)) {
     if (c[i] != c[i - 1] + 1) {
       stream_ct1 << format_traits<unsigned short>::failed_msg;
       stream_ct1 << format_traits<float>::failed_msg;
     }
-    assert(c[i] == c[i - 1] + 1);
-    assert(c[i] == i + 1);
-    assert(c[i] = co[i]);
+    if (!(c[i] == c[i - 1] + 1)) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
+    if (!(c[i] == i + 1)) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
+    if (!(c[i] = co[i])) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
   }
 }
 
 template <typename T>
 void SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
                                       sycl::stream stream_ct1, T *c, T *co) {
-  assert(size <= 32);
+  if (!(size <= 32)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
 
   auto i = item_ct1.get_local_id(2);
   c[i] = 1;
@@ -56,14 +87,39 @@ void SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   warpPrefixScan(c, i, item_ct1);
   item_ct1.barrier();
 
-  assert(1 == c[0]);
-  assert(1 == co[0]);
+  if (!(1 == c[0])) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
+  if (!(1 == co[0])) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
   if (i != 0) {
     if (c[i] != c[i - 1] + 1)
       stream_ct1 << format_traits<int>::failed_msg;
-    assert(c[i] == c[i - 1] + 1);
-    assert(c[i] == i + 1);
-    assert(c[i] = co[i]);
+    if (!(c[i] == c[i - 1] + 1)) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
+    if (!(c[i] == i + 1)) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
+    if (!(c[i] = co[i])) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
   }
 }
 
@@ -82,7 +138,12 @@ void verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
   auto i = item_ct1.get_group(2) * item_ct1.get_local_range().get(2) +
            item_ct1.get_local_id(2);
   if (i < n)
-    assert(v[i] == i + 1);
+    if (!(v[i] == i + 1)) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
   if (i == 0)
     stream_ct1 << "verify\n";
 }
@@ -93,7 +154,7 @@ int main() {
   cms::cudatest::requireDevices();
 
   std::cout << "warp level" << std::endl;
-  // std::cout << "warp 32" << std::endl;
+  std::cout << "warp 32" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
@@ -114,7 +175,7 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
-  // std::cout << "warp 16" << std::endl;
+  std::cout << "warp 16" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
@@ -135,7 +196,7 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
-  // std::cout << "warp 5" << std::endl;
+  std::cout << "warp 5" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
 

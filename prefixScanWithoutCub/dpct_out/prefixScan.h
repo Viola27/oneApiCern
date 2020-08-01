@@ -62,9 +62,24 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
 #endif
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  assert(ws);
-  assert(size <= 1024);
-  assert(0 == item_ct1.get_local_range().get(2) % 32);
+  if (!(ws)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
+  if (!(size <= 1024)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
+  if (!(0 == item_ct1.get_local_range().get(2) % 32)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
   auto first = item_ct1.get_local_id(2);
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
@@ -72,7 +87,12 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
     warpPrefixScan(ci, co, i, item_ct1);
     auto laneId = item_ct1.get_local_id(2) & 0x1f;
     auto warpId = i / 32;
-    assert(warpId < 32);
+    if (!(warpId < 32)) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
     if (31 == laneId)
       ws[warpId] = co[i];
   }
@@ -104,16 +124,36 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
 #endif
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  assert(ws);
-  assert(size <= 1024);
-  assert(0 == item_ct1.get_local_range().get(2) % 32);
+  if (!(ws)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
+  if (!(size <= 1024)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
+  if (!(0 == item_ct1.get_local_range().get(2) % 32)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
   auto first = item_ct1.get_local_id(2);
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
     warpPrefixScan(c, i, item_ct1);
     auto laneId = item_ct1.get_local_id(2) & 0x1f;
     auto warpId = i / 32;
-    assert(warpId < 32);
+    if (!(warpId < 32)) {
+      std::cerr << Assertion failed during
+          "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+                << std::endl;
+      abort();
+    }
     if (31 == laneId)
       ws[warpId] = c[i];
   }
@@ -153,9 +193,20 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   volatile T *co = ico;
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  assert(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size()); // size of psum below
+  if (!(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size())) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
 #endif
-  assert(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >= size);
+  if (!(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >=
+        size)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
   // first each block does a scan
   int off = item_ct1.get_local_range().get(2) * item_ct1.get_group(2);
   if (size - off > 0)
@@ -178,7 +229,12 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   if (!(*isLastBlockDone))
     return;
 
-  assert(int(item_ct1.get_group_range().get(2)) == *pc);
+  if (!(int(item_ct1.get_group_range().get(2)) == *pc)) {
+    std::cerr << Assertion failed during
+        "testWarpPrefixScan (file 'prefixScan_t.dp.cpp)"\nAborting...
+              << std::endl;
+    abort();
+  }
 
   // good each block has done its work and now we are left in last block
 
