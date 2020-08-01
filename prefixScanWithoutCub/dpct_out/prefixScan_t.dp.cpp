@@ -332,7 +332,7 @@ int main() {
                          });
       });
     } catch (std::exception &e) {
-      stream_ct1 << e.what();
+      std::cerr << e.what();
     }
 
     try {

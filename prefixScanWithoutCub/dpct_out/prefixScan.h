@@ -78,10 +78,7 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
     warpPrefixScan(ci, co, i, item_ct1);
     auto laneId = item_ct1.get_local_id(2) & 0x1f;
     auto warpId = i / 32;
-    if (!(warpId < 32)) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+    if (!(warpId < 32)) { // aggiungere il messaggio di errore!
       abort();
     }
     if (31 == laneId)
@@ -130,10 +127,7 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
     warpPrefixScan(c, i, item_ct1);
     auto laneId = item_ct1.get_local_id(2) & 0x1f;
     auto warpId = i / 32;
-    if (!(warpId < 32)) {
-      std::cerr << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"
-                << std::endl;
+    if (!(warpId < 32)) { // aggiungere il messaggio di errore!
       abort();
     }
     if (31 == laneId)
@@ -175,11 +169,11 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   volatile T *co = ico;
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  if (!(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size())) { // aggiungere il messaggio di errore!
+  /*if (!(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size())) { // aggiungere il messaggio di errore!
     abort();
   }
-  // assert(sizeof(T) * item_ct1.get_group_range().get(2) <=
-  // dynamic_smem_size()); // size of psum below
+  assert(sizeof(T) * item_ct1.get_group_range().get(2) <=
+  dynamic_smem_size()); // size of psum below*/
 #endif
   if (!(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >=
         size)) { // aggiungere il messaggio di errore!
