@@ -20,7 +20,7 @@ public:
 };
 
 template <typename T>
-void SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
+int SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
                                   sycl::stream stream_ct1, T *ws, T *c, T *co) {
 
   auto first = item_ct1.get_local_id(2);
@@ -34,12 +34,12 @@ void SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   if (!(1 == c[0])) {
     stream_ct1 << "Assertion failed during testPrefixScan (file "
                   "'prefixScan_t.dp.cpp)\nAborting...\n";
-    abort();
+    return -1;
   }
   if (!(1 == co[0])) {
     stream_ct1 << "Assertion failed during testPrefixScan (file "
                   "'prefixScan_t.dp.cpp)\nAborting...\n";
-    abort();
+    return -1;
   }
   for (auto i = first + 1; i < size; i += item_ct1.get_local_range().get(2)) {
     if (c[i] != c[i - 1] + 1) {
@@ -49,28 +49,29 @@ void SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
     if (!(c[i] == c[i - 1] + 1)) {
       stream_ct1 << "Assertion failed during testPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n";
-      abort();
+      return -1;
     }
     if (!(c[i] == i + 1)) {
       stream_ct1 << "Assertion failed during testPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n";
-      abort();
+      return -1;
     }
     if (!(c[i] = co[i])) {
       stream_ct1 << "Assertion failed during testPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n";
-      abort();
+      return -1;
     }
   }
+  return 0;
 }
 
 template <typename T>
-void SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
+int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
                                       sycl::stream stream_ct1, T *c, T *co) {
   if (!(size <= 32)) {
     stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
                  "'prefixScan_t.dp.cpp)\nAborting...\n";
-    abort();
+    return -1;
   }
 
   auto i = item_ct1.get_local_id(2);
@@ -84,12 +85,12 @@ void SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   if (!(1 == c[0])) {
     stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
                  "'prefixScan_t.dp.cpp)\nAborting...\n";
-    abort();
+    return -1;
   }
   if (!(1 == co[0])) {
     stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
                  "'prefixScan_t.dp.cpp)\nAborting...\n";
-    abort();
+    return -1;
   }
   if (i != 0) {
     if (c[i] != c[i - 1] + 1)
@@ -97,19 +98,20 @@ void SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
     if (!(c[i] == c[i - 1] + 1)) {
       stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n";
-      abort();
+      return -1;
     }
     if (!(c[i] == i + 1)) {
       stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n";
-      abort();
+      return -1;
     }
     if (!(c[i] = co[i])) {
       stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n";
-      abort();
+      return -1;
     }
   }
+  return 0;
 }
 
 void init(uint32_t *v, uint32_t val, uint32_t n, sycl::nd_item<3> item_ct1,
@@ -122,7 +124,7 @@ void init(uint32_t *v, uint32_t val, uint32_t n, sycl::nd_item<3> item_ct1,
     stream_ct1 << "init\n";
 }
 
-void verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
+int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
             sycl::stream stream_ct1) {
   auto i = item_ct1.get_group(2) * item_ct1.get_local_range().get(2) +
            item_ct1.get_local_id(2);
@@ -130,10 +132,11 @@ void verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
     if (!(v[i] == i + 1)) {
       stream_ct1 << "Assertion failed during 'verify' (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n";
-      abort();
+      return -1;
     }
   if (i == 0)
     stream_ct1 << "verify\n";
+  return 0;
 }
 
 int main() {
@@ -329,7 +332,7 @@ int main() {
                                dpct_local_acc_ct1.get_pointer(),
                                ws_acc_ct1.get_pointer(),
                                isLastBlockDone_acc_ct1.get_pointer());
-                         });
+			   });
       });
     } catch (std::exception &e) {
       std::cerr << e.what();

@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <dpct/dpct.hpp>
 #include <math.h>
+#include <tbb/tbb_exception.h>
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
 
@@ -54,7 +55,7 @@ namespace cuda {
 
 // limited to 32*32 elements....
 template <typename VT, typename T>
-__dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
+__dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(VT const *ci, VT *co,
                                                    uint32_t size, T *ws,
                                                    sycl::nd_item<3> item_ct1
 #ifndef DPCPP_COMPATIBILITY_TEMP
@@ -63,13 +64,13 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
   if (!(ws)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
   if (!(size <= 1024)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
   if (!(0 == item_ct1.get_local_range().get(2) % 32)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
   auto first = item_ct1.get_local_id(2);
 
@@ -79,14 +80,14 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
     auto laneId = item_ct1.get_local_id(2) & 0x1f;
     auto warpId = i / 32;
     if (!(warpId < 32)) { // aggiungere il messaggio di errore!
-      abort();
+      return -1;
     }
     if (31 == laneId)
       ws[warpId] = co[i];
   }
   item_ct1.barrier();
   if (size <= 32)
-    return;
+    return 0;
   if (item_ct1.get_local_id(2) < 32)
     warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1);
   item_ct1.barrier();
@@ -100,12 +101,13 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(VT const *ci, VT *co,
   for (uint32_t i = 1; i < size; ++i)
     co[i] = ci[i] + co[i - 1];
 #endif
+  return 0;
 }
 
 // same as above, may remove
 // limited to 32*32 elements....
 template <typename T>
-__dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
+__dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
                                                    sycl::nd_item<3> item_ct1
 #ifndef DPCPP_COMPATIBILITY_TEMP
                                                    = nullptr
@@ -113,13 +115,13 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
   if (!(ws)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
   if (!(size <= 1024)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
   if (!(0 == item_ct1.get_local_range().get(2) % 32)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
   auto first = item_ct1.get_local_id(2);
 
@@ -128,14 +130,14 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
     auto laneId = item_ct1.get_local_id(2) & 0x1f;
     auto warpId = i / 32;
     if (!(warpId < 32)) { // aggiungere il messaggio di errore!
-      abort();
+      return -1;
     }
     if (31 == laneId)
       ws[warpId] = c[i];
   }
   item_ct1.barrier();
   if (size <= 32)
-    return;
+    return 0;
   if (item_ct1.get_local_id(2) < 32)
     warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1);
   item_ct1.barrier();
@@ -148,6 +150,7 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
   for (uint32_t i = 1; i < size; ++i)
     c[i] += c[i - 1];
 #endif
+  return 0;
 }
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
@@ -162,7 +165,7 @@ __dpct_inline__ SYCL_EXTERNAL void blockPrefixScan(T *c, uint32_t size, T *ws,
 
 // in principle not limited....
 template <typename T>
-void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
+int multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
                           sycl::nd_item<3> item_ct1, uint8_t *dpct_local, T *ws,
                           bool *isLastBlockDone) {
   volatile T const *ci = ici;
@@ -177,7 +180,7 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
 #endif
   if (!(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >=
         size)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
   // first each block does a scan
   int off = item_ct1.get_local_range().get(2) * item_ct1.get_group(2);
@@ -199,10 +202,10 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
   item_ct1.barrier();
 
   if (!(*isLastBlockDone))
-    return;
+    return 0;
 
   if (!(int(item_ct1.get_group_range().get(2)) == *pc)) { // aggiungere il messaggio di errore!
-    abort();
+    return -1;
   }
 
   // good each block has done its work and now we are left in last block
@@ -224,6 +227,7 @@ void multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
        i < size; i += item_ct1.get_local_range().get(2), ++k) {
     co[i] += psum[k];
   }
+  return 0;
 }
 } // namespace cuda
 } // namespace cms
