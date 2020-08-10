@@ -4,6 +4,8 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "utility": "cpp",
-        "iostream": "cpp"
-    }
+        "iostream": "cpp",
+        "cassert": "cpp"
+    },
+    "C_Cpp.dimInactiveRegions": false
 }
