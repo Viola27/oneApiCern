@@ -177,8 +177,8 @@ int main() {
                        sycl::access::target::local>
             co_acc_ct1(sycl::range<1>(1024), cgh);
 
-        cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1,1,bs),
-                                           sycl::range<3>(1,1,bs)),
+        cgh.parallel_for(sycl::nd_range<3>(sycl::range<1>(bs),
+                                           sycl::range<1>(bs)),
                          [=](sycl::nd_item<3> item_ct1) {
                            testPrefixScan<uint16_t>(j, item_ct1, stream_ct1,
                                                     ws_acc_ct1.get_pointer(),
@@ -201,8 +201,8 @@ int main() {
                        sycl::access::target::local>
             co_acc_ct1(sycl::range<1>(1024), cgh);
 
-        cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1,1,bs),
-                                           sycl::range<3>(1,1,bs)),
+        cgh.parallel_for(sycl::nd_range<3>(sycl::range<1>(bs),
+                                           sycl::range<1>(bs)),
                          [=](sycl::nd_item<3> item_ct1) {
                            testPrefixScan<float>(j, item_ct1, stream_ct1,
                                                  ws_acc_ct1.get_pointer(),
@@ -239,9 +239,9 @@ int main() {
     q_ct1.submit([&](sycl::handler &cgh) {
       sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
-      cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1,1,nblocks) *
-                                             sycl::range<3>(1,1,nthreads),
-                                         sycl::range<3>(1,1,nthreads)),
+      cgh.parallel_for(sycl::nd_range<3>(sycl::range<1>(nblocks) *
+                                             sycl::range<1>(nthreads),
+                                         sycl::range<1>(nthreads)),
                        [=](sycl::nd_item<3> item_ct1) {
                          init(d_in, 1, num_items, item_ct1, stream_ct1);
                        });
@@ -272,9 +272,9 @@ int main() {
                        sycl::access::target::local>
             isLastBlockDone_acc_ct1(cgh);
 
-        cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1,1,nblocks) *
-                                               sycl::range<3>(1,1,nthreads),
-                                           sycl::range<3>(1,1,nthreads)),
+        cgh.parallel_for(sycl::nd_range<3>(sycl::range<1>(nblocks) *
+                                               sycl::range<1>(nthreads),
+                                           sycl::range<1>(nthreads)),
                          [=](sycl::nd_item<3> item_ct1) {
                            multiBlockPrefixScan<uint32_t>(
                                d_in, d_out1, num_items, d_pc, item_ct1,
@@ -291,9 +291,9 @@ int main() {
       q_ct1.submit([&](sycl::handler &cgh) {
         sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
-        cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1,1,nblocks) *
-                                               sycl::range<3>(1,1,nthreads),
-                                           sycl::range<3>(1,1,nthreads)),
+        cgh.parallel_for(sycl::nd_range<3>(sycl::range<1>(nblocks) *
+                                               sycl::range<1>(nthreads),
+                                           sycl::range<1>(nthreads)),
                          [=](sycl::nd_item<3> item_ct1) {
                            verify(d_out1, num_items, item_ct1, stream_ct1);
                          });
