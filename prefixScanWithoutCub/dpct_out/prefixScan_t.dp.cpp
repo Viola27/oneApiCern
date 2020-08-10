@@ -144,7 +144,12 @@ int main() {
   sycl::queue &q_ct1 = dev_ct1.default_queue();
   // cms::oneapitest::requireDevices();
 
-  std::cout << "warp level" << std::endl;
+  std::cout << "\nmax item sizes: ";
+  auto info = dev_ct1.get_info<sycl::info::device::max_work_item_sizes>();
+  std::cout << info[0] << ' ' << info[1] << ' ' << info[2];
+  std::cout << "\nmax work item dimentions: ";
+  std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>();
+  std::cout << "\nwarp level" << std::endl;
   std::cout << "warp 32" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
@@ -210,7 +215,7 @@ int main() {
   dev_ct1.queues_wait_and_throw();
 
   std::cout << "block level" << std::endl;
-  for (int bs = 32; bs <= 1024; bs += 32) {
+  /*for (int bs = 32; bs <= 1024; bs += 32) {
     // std::cout << "bs " << bs << std::endl;
     for (int j = 1; j <= 1024; ++j) {
       // std::cout << j << std::endl;
@@ -263,7 +268,7 @@ int main() {
       });
       dev_ct1.queues_wait_and_throw();
     }
-  }
+  }*/
   dev_ct1.queues_wait_and_throw();
 
   int num_items = 200;
