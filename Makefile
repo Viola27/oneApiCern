@@ -8,22 +8,27 @@ EXE_NAME = prefixScan_t
 SOURCES = prefixScanWithoutCub/dpct_out/prefixScan_t.dp.cpp
 LINK_FLAG = /opt/intel/oneapi/compiler/latest/linux/lib/libsycl-glibc.o
 
-all: build_cub build_l
+#MY_LINK_FLAG = ~/intel/inteloneapi/compiler/latest/linux/lib/libsycl-glibc.o
 
-build:
+all: build_cub build
+
+build: 
 	$(CXX) $(CXXFLAGS) -o $(EXE_NAME) $(SOURCES)
 
-build_cub:
-	$(CXX) $(CXXFLAG) -o $(CUB_EXE_NAME) $(CUB_SOURCES)
+#my_linking_build: 
+#	$(CXX) $(CXXFLAGS) $(SOURCES) $(MY_LINK_FLAG) -o $(EXE_NAME)	
 
-run:
-	./$(EXE_NAME)
+linking_building:
+	$(CXX) $(CXXFLAGS) $(SOURCES) $(LINK_FLAG) -o $(EXE_NAME)
+
+build_cub:
+	$(CXX) $(CXXFLAGS) -o $(CUB_EXE_NAME) $(CUB_SOURCES)
 
 run_cub:
 	./$(CUB_EXE_NAME)
 
-build_l:
-	$(CXX) $(CXXFLAGS) $(SOURCES) $(LINK_FLAG) -o $(EXE_NAME)
+run:
+	./$(EXE_NAME)
 
 clean:
 	rm -rf $(CUB_EXE_NAME)
