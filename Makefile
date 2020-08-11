@@ -8,7 +8,7 @@ EXE_NAME = prefixScan_t
 SOURCES = prefixScanWithoutCub/dpct_out/prefixScan_t.dp.cpp
 LINK_FLAG = /opt/intel/oneapi/compiler/latest/linux/lib/libsycl-glibc.o
 
-all: build_cub build_l
+all: build_cub build
 
 build:
 	$(CXX) $(CXXFLAGS) -o $(EXE_NAME) $(SOURCES)
