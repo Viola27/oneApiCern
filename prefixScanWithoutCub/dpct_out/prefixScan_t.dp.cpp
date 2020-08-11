@@ -3,9 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-//#include "cudaCheck.h"
 #include "prefixScan.h"
-#include "requireDevices.h"
 
 using namespace cms::cuda;
 
@@ -33,12 +31,12 @@ int SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
 
   if (!(1 == c[0])) {
     stream_ct1 << "Assertion failed during testPrefixScan (file "
-                  "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                  "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
   if (!(1 == co[0])) {
     stream_ct1 << "Assertion failed during testPrefixScan (file "
-                  "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                  "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
   for (auto i = first + 1; i < size; i += item_ct1.get_local_range().get(2)) {
@@ -48,17 +46,17 @@ int SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
     }
     if (!(c[i] == c[i - 1] + 1)) {
       stream_ct1 << "Assertion failed during testPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
     if (!(c[i] == i + 1)) {
       stream_ct1 << "Assertion failed during testPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
     if (!(c[i] = co[i])) {
       stream_ct1 << "Assertion failed during testPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
   }
@@ -70,7 +68,7 @@ int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
                                       sycl::stream stream_ct1, T *c, T *co) {
   if (!(size <= 32)) {
     stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                 "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
 
@@ -84,12 +82,12 @@ int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
 
   if (!(1 == c[0])) {
     stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                 "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
   if (!(1 == co[0])) {
     stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
-                 "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                 "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
   if (i != 0) {
@@ -97,17 +95,17 @@ int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
       stream_ct1 << format_traits<int>::failed_msg;
     if (!(c[i] == c[i - 1] + 1)) {
       stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
     if (!(c[i] == i + 1)) {
       stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
     if (!(c[i] = co[i])) {
       stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
   }
@@ -131,7 +129,7 @@ int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
   if (i < n)
     if (!(v[i] == i + 1)) {
       stream_ct1 << "Assertion failed during 'verify' (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n"; << cl::sycl::endl;
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
   if (i == 0)
