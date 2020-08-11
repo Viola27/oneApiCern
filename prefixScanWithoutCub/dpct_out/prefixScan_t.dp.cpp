@@ -147,6 +147,7 @@ int main() {
   std::cout << "\nmax item sizes: ";
   auto info = dev_ct1.get_info<sycl::info::device::max_work_item_sizes>();
   std::cout << info[0] << ' ' << info[1] << ' ' << info[2];
+  auto N = info[2]; // numero max di thread per fila
   std::cout << "\nmax work item dimentions: ";
   std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>();
   std::cout << "\nwarp level" << std::endl;
@@ -215,7 +216,7 @@ int main() {
   dev_ct1.queues_wait_and_throw();
 
   std::cout << "block level" << std::endl;
-  /*for (int bs = 32; bs <= 1024; bs += 32) {
+  for (int bs = 32; bs <= min(1024, N); bs += 32) {
     // std::cout << "bs " << bs << std::endl;
     for (int j = 1; j <= 1024; ++j) {
       // std::cout << j << std::endl;
@@ -268,7 +269,7 @@ int main() {
       });
       dev_ct1.queues_wait_and_throw();
     }
-  }*/
+  }
   dev_ct1.queues_wait_and_throw();
 
   int num_items = 200;
@@ -310,7 +311,7 @@ int main() {
 
     q_ct1.memset(d_pc, 0, sizeof(int32_t)).wait();
 
-    nthreads = 1024;
+    nthreads = min(1024, N);
     nblocks = (num_items + nthreads - 1) / nthreads;
     std::cout << "launch multiBlockPrefixScan " << num_items << ' ' << nblocks
               << std::endl;
