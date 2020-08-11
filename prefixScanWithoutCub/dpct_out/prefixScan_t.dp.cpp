@@ -112,28 +112,30 @@ int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   return 0;
 }
 
-void init(uint32_t *v, uint32_t val, uint32_t n, sycl::nd_item<3> item_ct1,
-          sycl::stream stream_ct1) {
-  auto i = item_ct1.get_group(2) * item_ct1.get_local_range().get(2) +
-           item_ct1.get_local_id(2);
+void init(uint32_t *v, uint32_t val, uint32_t n, sycl::nd_item<3> my_item,
+          sycl::stream my_stream) {
+  //auto i = my_item.get_group(2) * my_item.get_local_range().get(2) +
+  //         my_item.get_local_id(2);
+  auto i = my_item.get_global_id(2);
   if (i < n)
     v[i] = val;
   if (i == 0)
-    stream_ct1 << "init\n";
+    my_stream << "init" << cl::sycl::endl;
 }
 
-int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
-            sycl::stream stream_ct1) {
-  auto i = item_ct1.get_group(2) * item_ct1.get_local_range().get(2) +
-           item_ct1.get_local_id(2);
+int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> my_item,
+            sycl::stream my_stream) {
+  //auto i = my_item.get_group(2) * my_item.get_local_range().get(2) +
+  //         my_item.get_local_id(2);
+  auto i =  my_item.get_global_id(2);
   if (i < n)
     if (!(v[i] == i + 1)) {
-      stream_ct1 << "Assertion failed during 'verify' (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n";
+      my_stream << "Assertion failed during 'verify' (file "
+                   "'prefixScan_t.dp.cpp)\nAborting..." << cl::sycl::endl;
       return -1;
     }
   if (i == 0)
-    stream_ct1 << "verify\n";
+    my_stream << "verify" << cl::sycl::endl;
   return 0;
 }
 
@@ -147,7 +149,9 @@ int main() {
   std::cout << info[0] << ' ' << info[1] << ' ' << info[2];
   int N = info[2]; // numero max di thread per fila
   std::cout << "\nmax work item dimentions: ";
-  std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>();
+  std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>() << "\n";
+
+  /*
   std::cout << "\nwarp level" << std::endl;
   std::cout << "warp 32" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
@@ -212,7 +216,9 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
+*/
 
+/*
   std::cout << "block level" << std::endl;
   std::cout << "min " << std::min(1024,N) << std::endl;
   for (int bs = 32; bs <= std::min(1024, N); bs += 32) {
@@ -270,11 +276,12 @@ int main() {
     }
   }
   dev_ct1.queues_wait_and_throw();
+*/
 
   int num_items = 200;
   for (int ksize = 1; ksize < 4; ++ksize) {
     // test multiblock
-    std::cout << "multiblok" << std::endl;
+    std::cout << "multiblok\n";
     // Declare, allocate, and initialize device-accessible pointers for input
     // and output
     num_items *= 10;
@@ -291,17 +298,20 @@ int main() {
 
     auto nthreads = 256;
     auto nblocks = (num_items + nthreads - 1) / nthreads;
+    std::cout << "launch init " << num_items << ' ' << nblocks
+              << "\n";
 
     q_ct1.submit([&](sycl::handler &cgh) {
-      sycl::stream stream_ct1(64 * 1024, 80, cgh);
+      sycl::stream my_stream(64 * 1024, 80, cgh);
 
       cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, nblocks) *
                                              sycl::range<3>(1, 1, nthreads),
                                          sycl::range<3>(1, 1, nthreads)),
-                       [=](sycl::nd_item<3> item_ct1) {
-                         init(d_in, 1, num_items, item_ct1, stream_ct1);
+                       [=](sycl::nd_item<3> my_item) {
+                         init(d_in, 1, num_items, my_item, my_stream);
                        });
     });
+    
 
     // the block counter
     int32_t *d_pc;
@@ -313,45 +323,47 @@ int main() {
     nthreads = std::min(1024, N);
     nblocks = (num_items + nthreads - 1) / nthreads;
     std::cout << "launch multiBlockPrefixScan " << num_items << ' ' << nblocks
-              << std::endl;
+              << "\n";
 
     try {
       q_ct1.submit([&](sycl::handler &cgh) {
         // accessors to device memory
         sycl::accessor<uint8_t, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
-            dpct_local_acc_ct1(sycl::range<1>(4 * nblocks), cgh);
+            dpct_local_acc(sycl::range<1>(4 * nblocks), cgh);
         sycl::accessor<uint32_t, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
-            ws_acc_ct1(sycl::range<1>(32), cgh);
+            ws_acc(sycl::range<1>(32), cgh);
         sycl::accessor<bool, 0, sycl::access::mode::read_write,
                        sycl::access::target::local>
-            isLastBlockDone_acc_ct1(cgh);
+            isLastBlockDone_acc(cgh);
 
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, nblocks) *
                                                sycl::range<3>(1, 1, nthreads),
                                            sycl::range<3>(1, 1, nthreads)),
-                         [=](sycl::nd_item<3> item_ct1) {
+                         [=](sycl::nd_item<3> my_item) {
                            multiBlockPrefixScan<uint32_t>(
-                               d_in, d_out1, num_items, d_pc, item_ct1,
-                               dpct_local_acc_ct1.get_pointer(),
-                               ws_acc_ct1.get_pointer(),
-                               isLastBlockDone_acc_ct1.get_pointer());
+                               d_in, d_out1, num_items, d_pc, my_item,
+                               dpct_local_acc.get_pointer(),
+                               ws_acc.get_pointer(),
+                               isLastBlockDone_acc.get_pointer());
 			   });
       });
     } catch (std::exception &e) {
       std::cerr << e.what();
     }
 
+    std::cout << "launch verify " << num_items << ' ' << nblocks
+              << "\n";  
     try {
       q_ct1.submit([&](sycl::handler &cgh) {
-        sycl::stream stream_ct1(64 * 1024, 80, cgh);
+        sycl::stream my_stream(64 * 1024, 80, cgh);
 
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, nblocks) *
                                                sycl::range<3>(1, 1, nthreads),
                                            sycl::range<3>(1, 1, nthreads)),
-                         [=](sycl::nd_item<3> item_ct1) {
-                           verify(d_out1, num_items, item_ct1, stream_ct1);
+                         [=](sycl::nd_item<3> my_item) {
+                           verify(d_out1, num_items, my_item, my_stream);
                          });
       });
     } catch (std::exception &e) {
@@ -359,6 +371,7 @@ int main() {
     }
 
     dev_ct1.queues_wait_and_throw();
+    std::cout << "fine " << ksize << "ciclo\n";
 
   } // ksize
   return 0;
