@@ -41,8 +41,9 @@ int SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   }
   for (auto i = first + 1; i < size; i += item_ct1.get_local_range().get(2)) {
     if (c[i] != c[i - 1] + 1) {
-      stream_ct1 << format_traits<unsigned short>::failed_msg;
-      stream_ct1 << format_traits<float>::failed_msg;
+       stream_ct1 << "!!Assertion failed during testPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
+      //stream_ct1 << format_traits<float>::failed_msg;
     }
     if (!(c[i] == c[i - 1] + 1)) {
       stream_ct1 << "Assertion failed during testPrefixScan (file "
@@ -64,47 +65,50 @@ int SYCL_EXTERNAL testPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
 }
 
 template <typename T>
-int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
-                                      sycl::stream stream_ct1, T *c, T *co) {
+int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> my_item,
+                                      sycl::stream my_stream, T *c, T *co) {
   if (!(size <= 32)) {
-    stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+    my_stream << "Assertion 1 failed during testWarpPrefixScan (file "
                  "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
 
-  auto i = item_ct1.get_local_id(2);
+  auto i = my_item.get_local_id(2);
   c[i] = 1;
-  item_ct1.barrier();
+  my_item.barrier();
 
-  warpPrefixScan(c, co, i, item_ct1);
-  warpPrefixScan(c, i, item_ct1);
-  item_ct1.barrier();
+  warpPrefixScan(c, co, i, my_item);
+  warpPrefixScan(c, i, my_item);
+  my_item.barrier();
 
   if (!(1 == c[0])) {
-    stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+    my_stream << "Assertion 2 failed during testWarpPrefixScan (file "
                  "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
   if (!(1 == co[0])) {
-    stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+    my_stream << "Assertion 3 failed during testWarpPrefixScan (file "
                  "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
     return -1;
   }
   if (i != 0) {
-    if (c[i] != c[i - 1] + 1)
-      stream_ct1 << format_traits<int>::failed_msg;
+    if (c[i] != c[i - 1] + 1){
+      // my_stream << format_traits<int>::failed_msg << cl::sycl::endl;
+      my_stream << "Assertion 4 failed during testWarpPrefixScan (file "
+                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
+    }
     if (!(c[i] == c[i - 1] + 1)) {
-      stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+      my_stream << "Assertion 5 failed during testWarpPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
     if (!(c[i] == i + 1)) {
-      stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+      my_stream << "Assertion 6 failed during testWarpPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
     if (!(c[i] = co[i])) {
-      stream_ct1 << "Assertion failed during testWarpPrefixScan (file "
+      my_stream << "Assertion 7 failed during testWarpPrefixScan (file "
                    "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::endl;
       return -1;
     }
@@ -151,74 +155,74 @@ int main() {
   std::cout << "\nmax work item dimentions: ";
   std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>() << "\n";
 
-  /*
   std::cout << "\nwarp level" << std::endl;
+  
   std::cout << "warp 32" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
-    sycl::stream stream_ct1(64 * 1024, 80, cgh);
+    sycl::stream my_stream(64 * 1024, 80, cgh);
 
     // accessors to device memory
     sycl::accessor<int, 1, sycl::access::mode::read_write,
                    sycl::access::target::local>
-        c_acc_ct1(sycl::range<1>(1024), cgh);
+        c_acc(sycl::range<1>(1024), cgh);
     sycl::accessor<int, 1, sycl::access::mode::read_write,
                    sycl::access::target::local>
-        co_acc_ct1(sycl::range<1>(1024), cgh);
+        co_acc(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
-        [=](sycl::nd_item<3> item_ct1) {
-          testWarpPrefixScan<int>(32, item_ct1, stream_ct1,
-                                  c_acc_ct1.get_pointer(),
-                                  co_acc_ct1.get_pointer());
+        [=](sycl::nd_item<3> my_item) {
+          testWarpPrefixScan<int>(32, my_item, my_stream,
+                                  c_acc.get_pointer(),
+                                  co_acc.get_pointer());
         });
   });
   dev_ct1.queues_wait_and_throw();
+
   std::cout << "warp 16" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
-    sycl::stream stream_ct1(64 * 1024, 80, cgh);
+    sycl::stream my_stream(64 * 1024, 80, cgh);
 
     // accessors to device memory
     sycl::accessor<int, 1, sycl::access::mode::read_write,
                    sycl::access::target::local>
-        c_acc_ct1(sycl::range<1>(1024), cgh);
+        c_acc(sycl::range<1>(1024), cgh);
     sycl::accessor<int, 1, sycl::access::mode::read_write,
                    sycl::access::target::local>
-        co_acc_ct1(sycl::range<1>(1024), cgh);
+        co_acc(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
-        [=](sycl::nd_item<3> item_ct1) {
-          testWarpPrefixScan<int>(16, item_ct1, stream_ct1,
-                                  c_acc_ct1.get_pointer(),
-                                  co_acc_ct1.get_pointer());
+        [=](sycl::nd_item<3> my_item) {
+          testWarpPrefixScan<int>(16, my_item, my_stream,
+                                  c_acc.get_pointer(),
+                                  co_acc.get_pointer());
         });
   });
   dev_ct1.queues_wait_and_throw();
+
   std::cout << "warp 5" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
-    sycl::stream stream_ct1(64 * 1024, 80, cgh);
+    sycl::stream my_stream(64 * 1024, 80, cgh);
 
     // accessors to device memory
     sycl::accessor<int, 1, sycl::access::mode::read_write,
                    sycl::access::target::local>
-        c_acc_ct1(sycl::range<1>(1024), cgh);
+        c_acc(sycl::range<1>(1024), cgh);
     sycl::accessor<int, 1, sycl::access::mode::read_write,
                    sycl::access::target::local>
-        co_acc_ct1(sycl::range<1>(1024), cgh);
+        co_acc(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
-        [=](sycl::nd_item<3> item_ct1) {
-          testWarpPrefixScan<int>(5, item_ct1, stream_ct1,
-                                  c_acc_ct1.get_pointer(),
-                                  co_acc_ct1.get_pointer());
+        [=](sycl::nd_item<3> my_item) {
+          testWarpPrefixScan<int>(5, my_item, my_stream,
+                                  c_acc.get_pointer(),
+                                  co_acc.get_pointer());
         });
   });
   dev_ct1.queues_wait_and_throw();
-*/
 
-/*
   std::cout << "block level" << std::endl;
 
   for (int bs = 32; bs <= std::min(1024, N); bs += 32) {
@@ -276,7 +280,6 @@ int main() {
     }
   }
   dev_ct1.queues_wait_and_throw();
-*/
 
   int num_items = 200;
   for (int ksize = 1; ksize < 4; ++ksize) {
