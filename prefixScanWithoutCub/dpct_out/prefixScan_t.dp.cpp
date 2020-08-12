@@ -5,7 +5,7 @@
 
 #include "prefixScan.h"
 
-using namespace cms::cuda;
+//using namespace cms::cuda;
 
 template <typename T> struct format_traits {
 public:
@@ -76,7 +76,7 @@ int SYCL_EXTERNAL testWarpPrefixScan(uint32_t size, sycl::nd_item<3> item_ct1,
   c[i] = 1;
   item_ct1.barrier();
 
-  warpPrefixScan(c, co, i, item_ct1);
+  warpPrefixScan(c, co, i, item_ct1,stream_ct1);
   warpPrefixScan(c, i, item_ct1);
   item_ct1.barrier();
 
@@ -170,6 +170,7 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
+  /*
   std::cout << "warp 16" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
@@ -212,7 +213,8 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
-
+*/
+/*
   std::cout << "block level" << std::endl;
 
   for (int bs = 32; bs <= std::min(1024, N); bs += 32) {
@@ -359,7 +361,8 @@ int main() {
     }
 
     dev_ct1.queues_wait_and_throw();
-
+  
   } // ksize
   return 0;
+  */
 }

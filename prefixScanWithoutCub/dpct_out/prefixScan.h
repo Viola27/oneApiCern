@@ -13,21 +13,23 @@ template <typename T>
 void __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T const *__restrict__ ci,
                                                   T *__restrict__ co,
                                                   uint32_t i,
-                                                  sycl::nd_item<3> item_ct1) {
+                                                  sycl::nd_item<3> my_item,
+                                                  sycl::stream my_stream) {
   // ci and co may be the same
   auto x = ci[i];
-  auto laneId = item_ct1.get_local_id(2) & 0x1f;
+  auto laneId = my_item.get_local_id(2) & 0x1f;
+
 #pragma unroll
   for (int offset = 1; offset < 32; offset <<= 1) {
-    /*
-    DPCT1023:4: The DPC++ sub-group does not support mask options for
-     * shuffle_up.
-    */
-    auto y = item_ct1.get_sub_group().shuffle_up(x, offset);
+    sycl::intel::sub_group sg = my_item.get_sub_group();
+    auto y = sg.shuffle_up(x, offset);
+    my_stream << "sub group " <<  sg.get_group_id();
+    my_stream << "thread " << laneId << " iterazione " << offset << "\nx e y: " << x << " " << y << cl::sycl::endl;
     if (laneId >= offset)
       x += y;
   }
   co[i] = x;
+  //my_stream << "x: " << x << cl::sycl::endl;
 }
 
 template <typename T>
@@ -50,6 +52,7 @@ void __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T *c, uint32_t i,
 
 #endif
 
+/*
 namespace cms {
 namespace cuda {
 
@@ -152,6 +155,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
 #endif
   return 0;
 }
+*/
 
 #ifdef DPCPP_COMPATIBILITY_TEMP
 // see
@@ -162,49 +166,50 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
   return ret;
 }*/
 #endif
-
+/*
 // in principle not limited....
 template <typename T>
 int multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
-                          sycl::nd_item<3> item_ct1, uint8_t *dpct_local, T *ws,
+                          sycl::nd_item<3> my_item, uint8_t *dpct_local, T *ws,
                           bool *isLastBlockDone) {
   volatile T const *ci = ici;
   volatile T *co = ico;
-
+*/
 #ifdef DPCPP_COMPATIBILITY_TEMP
-  /*if (!(sizeof(T) * item_ct1.get_group_range().get(2) <= dynamic_smem_size())) { // aggiungere il messaggio di errore!
+  /*if (!(sizeof(T) * my_item.get_group_range().get(2) <= dynamic_smem_size())) { // aggiungere il messaggio di errore!
     abort();
   }
-  assert(sizeof(T) * item_ct1.get_group_range().get(2) <=
+  assert(sizeof(T) * my_item.get_group_range().get(2) <=
   dynamic_smem_size()); // size of psum below*/
 #endif
-  if (!(item_ct1.get_local_range().get(2) * item_ct1.get_group_range().get(2) >=
+/*
+  if (!(my_item.get_local_range().get(2) * my_item.get_group_range().get(2) >=
         size)) { // aggiungere il messaggio di errore!
     return -1;
   }
   // first each block does a scan
-  int off = item_ct1.get_local_range().get(2) * item_ct1.get_group(2);
+  int off = my_item.get_local_range().get(2) * my_item.get_group(2);
   if (size - off > 0)
     blockPrefixScan(
         ci + off, co + off,
-        sycl::min(int(item_ct1.get_local_range(2)), (int)(size - off)), ws,
-        item_ct1);
+        sycl::min(int(my_item.get_local_range(2)), (int)(size - off)), ws,
+        my_item);
 
   // count blocks that finished
 
-  if (0 == item_ct1.get_local_id(2)) {
+  if (0 == my_item.get_local_id(2)) {
     //__threadfence();
-    item_ct1.barrier();
+    my_item.barrier();
     auto value = dpct::atomic_fetch_add(pc, 1); // block counter
-    *isLastBlockDone = (value == (int(item_ct1.get_group_range(2)) - 1));
+    *isLastBlockDone = (value == (int(my_item.get_group_range(2)) - 1));
   }
 
-  item_ct1.barrier();
+  my_item.barrier();
 
   if (!(*isLastBlockDone))
     return 0;
 
-  if (!(int(item_ct1.get_group_range().get(2)) == *pc)) { // aggiungere il messaggio di errore!
+  if (!(int(my_item.get_group_range().get(2)) == *pc)) { // aggiungere il messaggio di errore!
     return -1;
   }
 
@@ -212,24 +217,24 @@ int multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
 
   // let's get the partial sums from each block
   auto psum = (T *)dpct_local;
-  for (int i = item_ct1.get_local_id(2), ni = item_ct1.get_group_range(2);
-       i < ni; i += item_ct1.get_local_range().get(2)) {
-    auto j = item_ct1.get_local_range().get(2) * i +
-             item_ct1.get_local_range().get(2) - 1;
+  for (int i = my_item.get_local_id(2), ni = my_item.get_group_range(2);
+       i < ni; i += my_item.get_local_range().get(2)) {
+    auto j = my_item.get_local_range().get(2) * i +
+             my_item.get_local_range().get(2) - 1;
     psum[i] = (j < size) ? co[j] : T(0);
   }
-  item_ct1.barrier();
-  blockPrefixScan(psum, psum, item_ct1.get_group_range(2), ws, item_ct1);
+  my_item.barrier();
+  blockPrefixScan(psum, psum, my_item.get_group_range(2), ws, my_item);
 
   // now it would have been handy to have the other blocks around...
-  for (int i = item_ct1.get_local_id(2) + item_ct1.get_local_range().get(2),
+  for (int i = my_item.get_local_id(2) + my_item.get_local_range().get(2),
            k = 0;
-       i < size; i += item_ct1.get_local_range().get(2), ++k) {
+       i < size; i += my_item.get_local_range().get(2), ++k) {
     co[i] += psum[k];
   }
   return 0;
 }
 } // namespace cuda
 } // namespace cms
-
+*/
 #endif // HeterogeneousCore_CUDAUtilities_interface_prefixScan_h

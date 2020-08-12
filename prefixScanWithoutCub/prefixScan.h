@@ -37,7 +37,7 @@ __device__ void __forceinline__ warpPrefixScan(T* c, uint32_t i, uint32_t mask) 
 }
 
 #endif
-
+/*
 namespace cms {
   namespace cuda {
 
@@ -185,5 +185,5 @@ namespace cms {
     }
   }  // namespace cuda
 }  // namespace cms
-
+*/
 #endif  // HeterogeneousCore_CUDAUtilities_interface_prefixScan_h
