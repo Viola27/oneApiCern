@@ -10,7 +10,7 @@
 #ifdef DPCPP_COMPATIBILITY_TEMP
 
 template <typename T>
-void __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T const *__restrict__ ci,
+void __attribute__ ((intel_reqd_sub_group_size(16)))  __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T const *__restrict__ ci,
                                                   T *__restrict__ co,
                                                   uint32_t i,
                                                   sycl::nd_item<3> item_ct1) {
@@ -31,7 +31,7 @@ void __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T const *__restrict__ ci,
 }
 
 template <typename T>
-void __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T *c, uint32_t i,
+void __attribute__ ((intel_reqd_sub_group_size(16)))  __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T *c, uint32_t i,
                                                   sycl::nd_item<3> item_ct1) {
   auto x = c[i];
   auto laneId = item_ct1.get_local_id(2) & 0x1f;
