@@ -162,7 +162,7 @@ int main() {
         co_acc_ct1(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
-        sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
+        sycl::nd_range<3>(sycl::range<3>(1, 1, 16), sycl::range<3>(1, 1, 16)),
         [=](sycl::nd_item<3> item_ct1) {
           testWarpPrefixScan<int>(32, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -170,7 +170,7 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
-  /*
+
   std::cout << "warp 16" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
@@ -184,7 +184,7 @@ int main() {
         co_acc_ct1(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
-        sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
+        sycl::nd_range<3>(sycl::range<3>(1, 1, 16), sycl::range<3>(1, 1, 16)),
         [=](sycl::nd_item<3> item_ct1) {
           testWarpPrefixScan<int>(16, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -205,7 +205,7 @@ int main() {
         co_acc_ct1(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
-        sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
+        sycl::nd_range<3>(sycl::range<3>(1, 1, 16), sycl::range<3>(1, 1, 16)),
         [=](sycl::nd_item<3> item_ct1) {
           testWarpPrefixScan<int>(5, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -213,7 +213,7 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
-*/
+
 /*
   std::cout << "block level" << std::endl;
 

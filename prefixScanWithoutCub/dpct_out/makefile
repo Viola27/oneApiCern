@@ -1,6 +1,5 @@
 build:
-	dpcpp -c prefixScan_t.dp.cpp -std=c++11
-	dpcpp -o prefixScan prefixScan_t.dp.o /opt/intel/oneapi/compiler/latest/linux/lib/libsycl-glibc.o -std=c++11
+	dpcpp -g -std=c++17 -o prefixScan prefixScan_t.dp.cpp
 
 run:
 	SYCL_DEVICE_TYPE=CPU ./prefixScan
