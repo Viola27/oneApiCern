@@ -16,9 +16,9 @@ void __attribute__ ((intel_reqd_sub_group_size(16)))  __dpct_inline__ SYCL_EXTER
                                                   sycl::nd_item<3> item_ct1) {
   // ci and co may be the same
   auto x = ci[i];
-  auto laneId = item_ct1.get_local_id(2) & 0x1f;
+  auto laneId = item_ct1.get_local_id(2) & 0x0f;
 #pragma unroll
-  for (int offset = 1; offset < 32; offset <<= 1) {
+  for (int offset = 1; offset < 16; offset <<= 1) {
     /*
     DPCT1023:4: The DPC++ sub-group does not support mask options for
      * shuffle_up.
@@ -34,9 +34,9 @@ template <typename T>
 void __attribute__ ((intel_reqd_sub_group_size(16)))  __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T *c, uint32_t i,
                                                   sycl::nd_item<3> item_ct1) {
   auto x = c[i];
-  auto laneId = item_ct1.get_local_id(2) & 0x1f;
+  auto laneId = item_ct1.get_local_id(2) & 0x0f;
 #pragma unroll
-  for (int offset = 1; offset < 32; offset <<= 1) {
+  for (int offset = 1; offset < 16; offset <<= 1) {
     /*
     DPCT1023:5: The DPC++ sub-group does not support mask options for
      * shuffle_up.
@@ -77,7 +77,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(VT const *ci, VT *co,
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
 
     warpPrefixScan(ci, co, i, item_ct1);
-    auto laneId = item_ct1.get_local_id(2) & 0x10;
+    auto laneId = item_ct1.get_local_id(2) & 0x0f;
     auto warpId = i / 16;
     if (!(warpId < 16)) { // aggiungere il messaggio di errore!
       return -1;
@@ -127,7 +127,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
     warpPrefixScan(c, i, item_ct1);
-    auto laneId = item_ct1.get_local_id(2) & 0x10;
+    auto laneId = item_ct1.get_local_id(2) & 0x0f;
     auto warpId = i / 16;
     if (!(warpId < 16)) { // aggiungere il messaggio di errore!
       return -1;

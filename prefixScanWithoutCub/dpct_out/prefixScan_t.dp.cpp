@@ -215,7 +215,7 @@ int main() {
 
   std::cout << "block level" << std::endl;
 
-  for (int bs = 32; bs <= std::min(1024, 64); bs += 32) {
+  for (int bs = 32; bs <= std::min(96, 64); bs += 32) {
     std::cout << "bs " << bs << std::endl;
     for (int j = 1; j <= 17; ++j) {
       std::cout << j << std::endl;

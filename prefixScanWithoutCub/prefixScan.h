@@ -54,11 +54,11 @@ namespace cms {
 #ifdef __CUDA_ARCH__
       assert(ws);
       assert(size <= 1024);
-      assert(0 == blockDim.x % 32);
+      assert(0 == blockDim.x % 32); //verifica che i blocchi siano tutti di 32 (o multipli) thread
       auto first = threadIdx.x;
       auto mask = __ballot_sync(0xffffffff, first < size);
 
-      for (auto i = first; i < size; i += blockDim.x) {
+      for (auto i = first; i < size; i += blockDim.x) { //ogni thread gestisce tutta una colonna di elementi del vettore
         warpPrefixScan(ci, co, i, mask);
         auto laneId = threadIdx.x & 0x1f;
         auto warpId = i / 32;
@@ -67,15 +67,17 @@ namespace cms {
           ws[warpId] = co[i];
         mask = __ballot_sync(mask, i + blockDim.x < size);
       }
+      //fino qua ogni warp ha riempito da 1 a 32 ogni cella di co[i]
       __syncthreads();
+
       if (size <= 32)
         return;
       if (threadIdx.x < 32)
-        warpPrefixScan(ws, threadIdx.x, 0xffffffff);
+        warpPrefixScan(ws, threadIdx.x, 0xffffffff); //qua si sistemano tutti i valori dell'ultima colonna
       __syncthreads();
       for (auto i = first + 32; i < size; i += blockDim.x) {
         auto warpId = i / 32;
-        co[i] += ws[warpId - 1];
+        co[i] += ws[warpId - 1]; //si sistemano i valori di tutti i thread 
       }
       __syncthreads();
 #else
