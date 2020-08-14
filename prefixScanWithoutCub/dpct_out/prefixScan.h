@@ -69,7 +69,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(VT const *ci, VT *co,
   if (!(size <= 1024)) { // aggiungere il messaggio di errore!
     return -1;
   }
-  if (!(0 == item_ct1.get_local_range().get(2) % 32)) { // aggiungere il messaggio di errore!
+  if (!(0 == item_ct1.get_local_range().get(2) % 16)) { // aggiungere il messaggio di errore!
     return -1;
   }
   auto first = item_ct1.get_local_id(2);
@@ -77,22 +77,22 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(VT const *ci, VT *co,
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
 
     warpPrefixScan(ci, co, i, item_ct1);
-    auto laneId = item_ct1.get_local_id(2) & 0x1f;
-    auto warpId = i / 32;
-    if (!(warpId < 32)) { // aggiungere il messaggio di errore!
+    auto laneId = item_ct1.get_local_id(2) & 0x10;
+    auto warpId = i / 16;
+    if (!(warpId < 16)) { // aggiungere il messaggio di errore!
       return -1;
     }
-    if (31 == laneId)
+    if (15 == laneId)
       ws[warpId] = co[i];
   }
   item_ct1.barrier();
-  if (size <= 32)
+  if (size <= 16)
     return 0;
-  if (item_ct1.get_local_id(2) < 32)
+  if (item_ct1.get_local_id(2) < 16)
     warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1);
   item_ct1.barrier();
-  for (auto i = first + 32; i < size; i += item_ct1.get_local_range().get(2)) {
-    auto warpId = i / 32;
+  for (auto i = first + 16; i < size; i += item_ct1.get_local_range().get(2)) {
+    auto warpId = i / 16;
     co[i] += ws[warpId - 1];
   }
   item_ct1.barrier();
@@ -120,29 +120,29 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
   if (!(size <= 1024)) { // aggiungere il messaggio di errore!
     return -1;
   }
-  if (!(0 == item_ct1.get_local_range().get(2) % 32)) { // aggiungere il messaggio di errore!
+  if (!(0 == item_ct1.get_local_range().get(2) % 16)) { // aggiungere il messaggio di errore!
     return -1;
   }
   auto first = item_ct1.get_local_id(2);
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
     warpPrefixScan(c, i, item_ct1);
-    auto laneId = item_ct1.get_local_id(2) & 0x1f;
-    auto warpId = i / 32;
-    if (!(warpId < 32)) { // aggiungere il messaggio di errore!
+    auto laneId = item_ct1.get_local_id(2) & 0x10;
+    auto warpId = i / 16;
+    if (!(warpId < 16)) { // aggiungere il messaggio di errore!
       return -1;
     }
-    if (31 == laneId)
+    if (15 == laneId)
       ws[warpId] = c[i];
   }
   item_ct1.barrier();
-  if (size <= 32)
+  if (size <= 16)
     return 0;
-  if (item_ct1.get_local_id(2) < 32)
+  if (item_ct1.get_local_id(2) < 16)
     warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1);
   item_ct1.barrier();
-  for (auto i = first + 32; i < size; i += item_ct1.get_local_range().get(2)) {
-    auto warpId = i / 32;
+  for (auto i = first + 16; i < size; i += item_ct1.get_local_range().get(2)) {
+    auto warpId = i / 16;
     c[i] += ws[warpId - 1];
   }
   item_ct1.barrier();

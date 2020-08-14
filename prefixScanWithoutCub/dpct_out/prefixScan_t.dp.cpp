@@ -212,12 +212,12 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
-/*
+
   std::cout << "block level" << std::endl;
 
-  for (int bs = 32; bs <= std::min(1024, N); bs += 32) {
+  for (int bs = 32; bs <= std::min(1024, 64); bs += 32) {
     std::cout << "bs " << bs << std::endl;
-    for (int j = 1; j <= 1024; ++j) {
+    for (int j = 1; j <= 17; ++j) {
       std::cout << j << std::endl;
       q_ct1.submit([&](sycl::handler &cgh) {
         sycl::stream stream_ct1(64 * 1024, 80, cgh);
@@ -270,7 +270,7 @@ int main() {
     }
   }
   dev_ct1.queues_wait_and_throw();
-*/
+
   int num_items = 200;
   for (int ksize = 1; ksize < 4; ++ksize) {
     // test multiblock
