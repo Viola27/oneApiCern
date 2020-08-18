@@ -215,10 +215,10 @@ int main() {
 
   std::cout << "block level" << std::endl;
 
-  for (int bs = 32; bs <= std::min(96, 64); bs += 32) {
+  for (int bs = 32; bs <= std::min(N, 1024); bs += 32) {
     std::cout << "bs " << bs << std::endl;
-    for (int j = 1; j <= 17; ++j) {
-      std::cout << j << std::endl;
+    for (int j = 1; j <= std::min(N, 1024); ++j) {
+      //std::cout << j << std::endl;
       q_ct1.submit([&](sycl::handler &cgh) {
         sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
