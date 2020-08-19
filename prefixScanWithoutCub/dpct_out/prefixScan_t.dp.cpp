@@ -147,10 +147,10 @@ int main() {
   int max_item_size_z = max_item_size[2];
   auto max_work_group_size = dev_ct1.get_info<sycl::info::device::max_work_group_size>();
   std::cout << "\nmax work group sizes: " << max_work_group_size << std::endl;
-  auto dim_subgroup = dev_ct1.get_info<sycl::info::device::sub_group_sizes>();
-  std::cout << (int)dim_subgroup[0] << ' ' << (int)dim_subgroup[1] << ' ' << (int)dim_subgroup[2];
-  //int dim_subgroup2 = 16;
-  int dim_subgroup2 = std::min(16, (int)dim_subgroup[2]);
+  //auto dim_subgroup = dev_ct1.get_info<sycl::info::device::sub_group_sizes>();
+  //std::cout << (int)dim_subgroup[0] << ' ' << (int)dim_subgroup[1] << ' ' << (int)dim_subgroup[2];
+  int dim_subgroup2 = 16;
+  //int dim_subgroup2 = std::min(16, (int)dim_subgroup[2]);
   std::cout << "\ndim_subgroup: " << dim_subgroup2 << std::endl;
 
   //std::cout << "\nmax work item dimentions: ";
