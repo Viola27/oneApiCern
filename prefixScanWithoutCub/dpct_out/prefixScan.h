@@ -10,15 +10,17 @@
 #ifdef DPCPP_COMPATIBILITY_TEMP
 
 template <typename T>
-void __attribute__ ((intel_reqd_sub_group_size(16)))  __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T const *__restrict__ ci,
+void __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T const *__restrict__ ci,
                                                   T *__restrict__ co,
                                                   uint32_t i,
-                                                  sycl::nd_item<3> item_ct1) {
+                                                  sycl::nd_item<3> item_ct1,
+                                                  int dim_subgroup // 16 o 8
+                                                  ) {
   // ci and co may be the same
   auto x = ci[i];
-  auto laneId = item_ct1.get_local_id(2) & 0x0f;
+  auto laneId = item_ct1.get_local_id(2) % dim_subgroup;
 #pragma unroll
-  for (int offset = 1; offset < 16; offset <<= 1) {
+  for (int offset = 1; offset < dim_subgroup; offset <<= 1) {
     /*
     DPCT1023:4: The DPC++ sub-group does not support mask options for
      * shuffle_up.
@@ -31,12 +33,12 @@ void __attribute__ ((intel_reqd_sub_group_size(16)))  __dpct_inline__ SYCL_EXTER
 }
 
 template <typename T>
-void __attribute__ ((intel_reqd_sub_group_size(16)))  __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T *c, uint32_t i,
-                                                  sycl::nd_item<3> item_ct1) {
+void __dpct_inline__ SYCL_EXTERNAL warpPrefixScan(T *c, uint32_t i,
+                                                  sycl::nd_item<3> item_ct1, int dim_subgroup) {
   auto x = c[i];
-  auto laneId = item_ct1.get_local_id(2) & 0x0f;
+  auto laneId = item_ct1.get_local_id(2) % dim_subgroup;
 #pragma unroll
-  for (int offset = 1; offset < 16; offset <<= 1) {
+  for (int offset = 1; offset < dim_subgroup; offset <<= 1) {
     /*
     DPCT1023:5: The DPC++ sub-group does not support mask options for
      * shuffle_up.
@@ -61,6 +63,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(VT const *ci, VT *co,
 #ifndef DPCPP_COMPATIBILITY_TEMP
                                                    = nullptr
 #endif
+                                                  , int dim_subgroup // 8 o 16
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
   if (!(ws)) { // aggiungere il messaggio di errore!
@@ -69,30 +72,30 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(VT const *ci, VT *co,
   if (!(size <= 1024)) { // aggiungere il messaggio di errore!
     return -1;
   }
-  if (!(0 == item_ct1.get_local_range().get(2) % 16)) { // aggiungere il messaggio di errore!
+  if (!(0 == item_ct1.get_local_range().get(2) % dim_subgroup)) { // aggiungere il messaggio di errore!
     return -1;
   }
   auto first = item_ct1.get_local_id(2);
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
 
-    warpPrefixScan(ci, co, i, item_ct1);
-    auto laneId = item_ct1.get_local_id(2) & 0x0f;
-    auto warpId = i / 16;
-    if (!(warpId < 16)) { // aggiungere il messaggio di errore!
+    warpPrefixScan(ci, co, i, item_ct1, dim_subgroup);
+    auto laneId = item_ct1.get_local_id(2) % dim_subgroup;
+    auto warpId = i / dim_subgroup;
+    if (!(warpId < dim_subgroup)) { // aggiungere il messaggio di errore!
       return -1;
     }
-    if (15 == laneId)
+    if ((dim_subgroup - 1) == laneId)
       ws[warpId] = co[i];
   }
   item_ct1.barrier();
-  if (size <= 16)
+  if (size <= dim_subgroup)
     return 0;
-  if (item_ct1.get_local_id(2) < 16)
-    warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1);
+  if (item_ct1.get_local_id(2) < dim_subgroup)
+    warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1, dim_subgroup);
   item_ct1.barrier();
-  for (auto i = first + 16; i < size; i += item_ct1.get_local_range().get(2)) {
-    auto warpId = i / 16;
+  for (auto i = first + dim_subgroup; i < size; i += item_ct1.get_local_range().get(2)) {
+    auto warpId = i / dim_subgroup;
     co[i] += ws[warpId - 1];
   }
   item_ct1.barrier();
@@ -112,6 +115,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
 #ifndef DPCPP_COMPATIBILITY_TEMP
                                                    = nullptr
 #endif
+                                                  , int dim_subgroup
 ) {
 #ifdef DPCPP_COMPATIBILITY_TEMP
   if (!(ws)) { // aggiungere il messaggio di errore!
@@ -120,29 +124,29 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
   if (!(size <= 1024)) { // aggiungere il messaggio di errore!
     return -1;
   }
-  if (!(0 == item_ct1.get_local_range().get(2) % 16)) { // aggiungere il messaggio di errore!
+  if (!(0 == item_ct1.get_local_range().get(2) % dim_subgroup)) { // aggiungere il messaggio di errore!
     return -1;
   }
   auto first = item_ct1.get_local_id(2);
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
-    warpPrefixScan(c, i, item_ct1);
-    auto laneId = item_ct1.get_local_id(2) & 0x0f;
-    auto warpId = i / 16;
-    if (!(warpId < 16)) { // aggiungere il messaggio di errore!
+    warpPrefixScan(c, i, item_ct1, dim_subgroup);
+    auto laneId = item_ct1.get_local_id(2) % dim_dimsubgroup;
+    auto warpId = i / dim_subgroup;
+    if (!(warpId < dim_subgroup)) { // aggiungere il messaggio di errore!
       return -1;
     }
-    if (15 == laneId)
+    if ((dim_subgroup - 1) == laneId)
       ws[warpId] = c[i];
   }
   item_ct1.barrier();
-  if (size <= 16)
+  if (size <= dim_subgroup)
     return 0;
-  if (item_ct1.get_local_id(2) < 16)
-    warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1);
+  if (item_ct1.get_local_id(2) < dim_subgroup)
+    warpPrefixScan(ws, item_ct1.get_local_id(2), item_ct1, dim_subgroup);
   item_ct1.barrier();
-  for (auto i = first + 16; i < size; i += item_ct1.get_local_range().get(2)) {
-    auto warpId = i / 16;
+  for (auto i = first + dim_subgroup; i < size; i += item_ct1.get_local_range().get(2)) {
+    auto warpId = i / dim_subgroup;
     c[i] += ws[warpId - 1];
   }
   item_ct1.barrier();
@@ -167,7 +171,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
 template <typename T>
 int multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
                           sycl::nd_item<3> item_ct1, uint8_t *dpct_local, T *ws,
-                          bool *isLastBlockDone) {
+                          bool *isLastBlockDone, int dim_subgroup) {
   volatile T const *ci = ici;
   volatile T *co = ico;
 
@@ -188,7 +192,7 @@ int multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
     blockPrefixScan(
         ci + off, co + off,
         sycl::min(int(item_ct1.get_local_range(2)), (int)(size - off)), ws,
-        item_ct1);
+        item_ct1, dim_subgroup);
 
   // count blocks that finished
 
@@ -219,7 +223,7 @@ int multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
     psum[i] = (j < size) ? co[j] : T(0);
   }
   item_ct1.barrier();
-  blockPrefixScan(psum, psum, item_ct1.get_group_range(2), ws, item_ct1);
+  blockPrefixScan(psum, psum, item_ct1.get_group_range(2), ws, item_ct1, dim_subgroup);
 
   // now it would have been handy to have the other blocks around...
   for (int i = item_ct1.get_local_id(2) + item_ct1.get_local_range().get(2),
