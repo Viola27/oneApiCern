@@ -139,14 +139,18 @@ int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
 int main() {
   dpct::device_ext &dev_ct1 = dpct::get_current_device();
   sycl::queue &q_ct1 = dev_ct1.default_queue();
-  // cms::oneapitest::requireDevices();
 
+  //max work_item_sizes and max work group size
   std::cout << "\nmax item sizes: ";
-  auto info = dev_ct1.get_info<sycl::info::device::max_work_item_sizes>();
-  std::cout << info[0] << ' ' << info[1] << ' ' << info[2];
-  int N = info[2]; // numero max di thread per fila
-  std::cout << "\nmax work item dimentions: ";
-  std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>();
+  auto max_item_size = dev_ct1.get_info<sycl::info::device::max_work_item_sizes>();
+  std::cout << max_item_size[0] << ' ' << max_item_size[1] << ' ' << max_item_size[2];
+  int max_item_size_z = max_item_size[2];
+  auto max_work_group_size = dev_ct1.get_info<sycl::info::device::max_work_group_size>();
+  std::cout << "\nmax work group sizes: " << max_work_group_size;
+
+  //std::cout << "\nmax work item dimentions: ";
+  //std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>();
+
   std::cout << "\nwarp level" << std::endl;
   std::cout << "warp 32" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
@@ -169,6 +173,7 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
+
   std::cout << "warp 16" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
@@ -190,6 +195,7 @@ int main() {
         });
   });
   dev_ct1.queues_wait_and_throw();
+
   std::cout << "warp 5" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
@@ -213,10 +219,9 @@ int main() {
   dev_ct1.queues_wait_and_throw();
 
   std::cout << "block level" << std::endl;
-
-  for (int bs = 32; bs <= std::min(N, 1024); bs += 32) {
-    std::cout << "bs " << bs << std::endl;
-    for (int j = 1; j <= std::min(N, 1024); ++j) {
+  for (int bs = 32; bs <= std::min(max_item_size_z, 1024); bs += 32) {
+    //std::cout << "bs " << bs << std::endl;
+    for (int j = 1; j <= std::min(max_item_size_z, 1024); ++j) {
       //std::cout << j << std::endl;
       q_ct1.submit([&](sycl::handler &cgh) {
         sycl::stream stream_ct1(64 * 1024, 80, cgh);
@@ -242,6 +247,7 @@ int main() {
                          });
       });
       dev_ct1.queues_wait_and_throw();
+
       q_ct1.submit([&](sycl::handler &cgh) {
         sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
@@ -270,16 +276,18 @@ int main() {
   }
   dev_ct1.queues_wait_and_throw();
 
-  int num_items = 2;
+  std::cout << "multiblok" << std::endl;
+  int num_items = 200;
+  auto max_num_items = max_item_size_z * max_work_group_size;
   for (int ksize = 1; ksize < 4; ++ksize) {
     // test multiblock
-    std::cout << "multiblok" << std::endl;
     // Declare, allocate, and initialize device-accessible pointers for input
     // and output
     num_items *= 10;
-    if(num_items > 65536){
-	    printf("Errore. Troppi items ( > 65536 ). Avvio processo con 65536 items.\n");
-	    num_items = 65536;
+    
+    if(num_items > max_num_items){
+	    printf("Errore. Troppi items. Avvio processo con max_items.\n");
+	    num_items = max_num_items;
     }
     uint32_t *d_in;
     uint32_t *d_out1;
@@ -292,7 +300,7 @@ int main() {
     d_out2 = (uint32_t *)sycl::malloc_device(num_items * sizeof(uint32_t),
                                              dev_ct1, q_ct1.get_context());
 
-    auto nthreads = 256;
+    auto nthreads = std::min(max_item_size_z, 256);
     auto nblocks = (num_items + nthreads - 1) / nthreads;
 
     q_ct1.submit([&](sycl::handler &cgh) {
@@ -313,7 +321,7 @@ int main() {
 
    // memset(&d_pc, 0, sizeof(int32_t));
 
-    nthreads = std::min(1024, N);
+    nthreads = std::min(1024, max_item_size_z);
     nblocks = (num_items + nthreads - 1) / nthreads;
     std::cout << "launch multiBlockPrefixScan " << num_items << ' ' << nblocks
               << std::endl;
