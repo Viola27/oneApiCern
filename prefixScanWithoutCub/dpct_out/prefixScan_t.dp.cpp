@@ -147,6 +147,9 @@ int main() {
   int max_item_size_z = max_item_size[2];
   auto max_work_group_size = dev_ct1.get_info<sycl::info::device::max_work_group_size>();
   std::cout << "\nmax work group sizes: " << max_work_group_size;
+  auto dim_subgroup = dev_ct1.get_info<sycl::info::device::sub_group_sizes>();
+  std::cout << dim_subgroup[0] << ' ' << dim_subgroup[1] << ' ' << dim_subgroup[2];
+
 
   //std::cout << "\nmax work item dimentions: ";
   //std::cout << dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>();
@@ -169,8 +172,8 @@ int main() {
         [=](sycl::nd_item<3> item_ct1) {
           testWarpPrefixScan<int>(32, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
-                                  co_acc_ct1.get_pointer()),
-                                  dim_subgroup;
+                                  co_acc_ct1.get_pointer(),
+                                  dim_subgroup[2]);
         });
   });
   dev_ct1.queues_wait_and_throw();
@@ -192,8 +195,8 @@ int main() {
         [=](sycl::nd_item<3> item_ct1) {
           testWarpPrefixScan<int>(16, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
-                                  co_acc_ct1.get_pointer()),
-                                  dim_subgroup;
+                                  co_acc_ct1.get_pointer(),
+                                  dim_subgroup[2]);
         });
   });
   dev_ct1.queues_wait_and_throw();
@@ -215,8 +218,8 @@ int main() {
         [=](sycl::nd_item<3> item_ct1) {
           testWarpPrefixScan<int>(5, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
-                                  co_acc_ct1.get_pointer())
-                                  dim_subgroup;
+                                  co_acc_ct1.get_pointer(),
+                                  dim_subgroup[2]);
         });
   });
   dev_ct1.queues_wait_and_throw();
@@ -246,8 +249,8 @@ int main() {
                            testPrefixScan<uint16_t>(j, item_ct1, stream_ct1,
                                                     ws_acc_ct1.get_pointer(),
                                                     c_acc_ct1.get_pointer(),
-                                                    co_acc_ct1.get_pointer())
-                                                    dim_subgroup;
+                                                    co_acc_ct1.get_pointer(),
+                                                    dim_subgroup[2]);
                          });
       });
       dev_ct1.queues_wait_and_throw();
@@ -272,8 +275,8 @@ int main() {
                            testPrefixScan<float>(j, item_ct1, stream_ct1,
                                                  ws_acc_ct1.get_pointer(),
                                                  c_acc_ct1.get_pointer(),
-                                                 co_acc_ct1.get_pointer()),
-                                                 dim_subgroup;
+                                                 co_acc_ct1.get_pointer(),
+                                                 dim_subgroup[2]);
                          });
       });
       dev_ct1.queues_wait_and_throw();
@@ -352,8 +355,8 @@ int main() {
                                d_in, d_out1, num_items, d_pc, item_ct1,
                                dpct_local_acc_ct1.get_pointer(),
                                ws_acc_ct1.get_pointer(),
-                               isLastBlockDone_acc_ct1.get_pointer())
-                               dim_subgroup;
+                               isLastBlockDone_acc_ct1.get_pointer(),
+                               dim_subgroup[2]);
 			   });
       });
     } catch (std::exception &e) {

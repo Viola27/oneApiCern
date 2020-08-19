@@ -131,7 +131,7 @@ __dpct_inline__ SYCL_EXTERNAL int blockPrefixScan(T *c, uint32_t size, T *ws,
 
   for (auto i = first; i < size; i += item_ct1.get_local_range().get(2)) {
     warpPrefixScan(c, i, item_ct1, dim_subgroup);
-    auto laneId = item_ct1.get_local_id(2) % dim_dimsubgroup;
+    auto laneId = item_ct1.get_local_id(2) % dim_subgroup;
     auto warpId = i / dim_subgroup;
     if (!(warpId < dim_subgroup)) { // aggiungere il messaggio di errore!
       return -1;
