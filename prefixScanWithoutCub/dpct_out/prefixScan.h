@@ -194,7 +194,7 @@ int multiBlockPrefixScan(T *const ici, T *ico, int32_t size, int32_t *pc,
 
   if (0 == item_ct1.get_local_id(2)) {
     //__threadfence();
-    item_ct1.barrier();
+    //item_ct1.barrier();
     auto value = dpct::atomic_fetch_add(pc, 1); // block counter
     *isLastBlockDone = (value == (int(item_ct1.get_group_range(2)) - 1));
   }

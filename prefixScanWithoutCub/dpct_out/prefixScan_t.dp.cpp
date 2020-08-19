@@ -128,8 +128,7 @@ int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
            item_ct1.get_local_id(2);
   if (i < n)
     if (!(v[i] == i + 1)) {
-      stream_ct1 << "Assertion failed during 'verify' (file "
-                   "'prefixScan_t.dp.cpp)\nAborting...\n" << cl::sycl::flush;
+      stream_ct1 << "i = " << i << " v[i] = " << v[i] << " i+1 = " << i+1 << cl::sycl::endl;
       return -1;
     }
   if (i == 0)
@@ -271,13 +270,17 @@ int main() {
   }
   dev_ct1.queues_wait_and_throw();
 
-  int num_items = 200;
+  int num_items = 2;
   for (int ksize = 1; ksize < 4; ++ksize) {
     // test multiblock
     std::cout << "multiblok" << std::endl;
     // Declare, allocate, and initialize device-accessible pointers for input
     // and output
     num_items *= 10;
+    if(num_items > 65536){
+	    printf("Errore. Troppi items ( > 65536 ). Avvio processo con 65536 items.\n");
+	    num_items = 65536;
+    }
     uint32_t *d_in;
     uint32_t *d_out1;
     uint32_t *d_out2;
@@ -306,9 +309,9 @@ int main() {
     // the block counter
     int32_t *d_pc;
 
-    d_pc = (int32_t *)sycl::malloc_device(1, dev_ct1, q_ct1.get_context());
+    d_pc = (int32_t*)sycl::malloc_device(1, dev_ct1, q_ct1.get_context());
 
-    q_ct1.memset(d_pc, 0, sizeof(int32_t)).wait();
+   // memset(&d_pc, 0, sizeof(int32_t));
 
     nthreads = std::min(1024, N);
     nblocks = (num_items + nthreads - 1) / nthreads;
@@ -342,7 +345,7 @@ int main() {
     } catch (std::exception &e) {
       std::cerr << e.what();
     }
-
+    
     try {
       q_ct1.submit([&](sycl::handler &cgh) {
         sycl::stream stream_ct1(64 * 1024, 80, cgh);
