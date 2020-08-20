@@ -5,21 +5,27 @@
 
 void ker(sycl::nd_item<3> item_ct1, sycl::stream stream_ct1) {
 
-  stream_ct1 << "\nglobal range " << item_ct1.get_global_range();
-  stream_ct1 << "\nglobal id " << item_ct1.get_global_id();
-  stream_ct1 << "\nglobal linear id " << item_ct1.get_global_linear_id();
-  stream_ct1 << "\ngroup range " << item_ct1.get_group_range();
-  stream_ct1 << "\ngroup " << item_ct1.get_group().get_id();
-  stream_ct1 << "\ngroup linear id " << item_ct1.get_group_linear_id();
-  stream_ct1 << "\nlocal range " << item_ct1.get_local_range();
-  stream_ct1 << "\nlocal id " << item_ct1.get_local_id();
-  stream_ct1 << "\nlocal linear id " << item_ct1.get_local_linear_id();
+  stream_ct1 << "\nglobal range " << item_ct1.get_global_range()
+             << cl::sycl::endl;
+  stream_ct1 << "\nglobal id " << item_ct1.get_global_id() << cl::sycl::endl;
+  stream_ct1 << "\nglobal linear id " << item_ct1.get_global_linear_id()
+             << cl::sycl::endl;
+  stream_ct1 << "\ngroup range " << item_ct1.get_group_range()
+             << cl::sycl::endl;
+  stream_ct1 << "\ngroup " << item_ct1.get_group().get_id() << cl::sycl::endl;
+  stream_ct1 << "\ngroup linear id " << item_ct1.get_group_linear_id()
+             << cl::sycl::endl;
+  stream_ct1 << "\nlocal range " << item_ct1.get_local_range()
+             << cl::sycl::endl;
+  stream_ct1 << "\nlocal id " << item_ct1.get_local_id() << cl::sycl::endl;
+  stream_ct1 << "\nlocal linear id " << item_ct1.get_local_linear_id()
+             << cl::sycl::endl;
   stream_ct1 << "\nsubgroup group range "
-             << item_ct1.get_sub_group().get_group_range();
+             << item_ct1.get_sub_group().get_group_range() << cl::sycl::endl;
   stream_ct1 << "\nsubgroup group id "
-             << item_ct1.get_sub_group().get_group_id();
+             << item_ct1.get_sub_group().get_group_id() << cl::sycl::endl;
   stream_ct1 << "\nsubgroup local range "
-             << item_ct1.get_sub_group().get_local_range();
+             << item_ct1.get_sub_group().get_local_range() << cl::sycl::endl;
 }
 
 int main() {
@@ -44,7 +50,7 @@ int main() {
   std::cout << "\nmax item sizes (max number of work-items permitted in each "
                "dimension of the work-group): "
             << max_item_size[0] << ' ' << max_item_size[1] << ' '
-            << max_item_size[2];
+            << max_item_size[2] << std::endl;
 
   auto max_work_group_size =
       dev_ct1.get_info<sycl::info::device::max_work_group_size>();
@@ -61,11 +67,8 @@ int main() {
   for (int const &el : dim_subgroup) {
     std::cout << el << " ";
   }
-
-  // std::cout << "\nmax work item dimentions: ";
-  // std::cout <<
-  // dev_ct1.get_info<sycl::info::device::max_work_item_dimensions>();
-
+  std::cout << std::endl;
+  
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
