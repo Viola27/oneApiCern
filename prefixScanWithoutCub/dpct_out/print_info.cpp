@@ -85,4 +85,28 @@ int main() {
         [=](sycl::nd_item<3> item_ct1) { ker(item_ct1, stream_ct1); });
   });
   dev_ct1.queues_wait_and_throw();
+
+  q_ct1.submit([&](sycl::handler &cgh) {
+    sycl::stream stream_ct1(64 * 1024, 80, cgh);
+
+    // accessors to device memory
+    sycl::accessor<int, 1, sycl::access::mode::read_write,
+                   sycl::access::target::local>
+        c_acc_ct1(sycl::range<1>(1024), cgh);
+    sycl::accessor<int, 1, sycl::access::mode::read_write,
+                   sycl::access::target::local>
+        co_acc_ct1(sycl::range<1>(1024), cgh);
+
+    cgh.parallel_for(
+        sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
+        [=](sycl::nd_item<3> item_ct1)
+        [[intel::reqd_sub_group_size(8)]]
+         {
+           stream_ct1 << "\nlocal id "
+             << item_ct1.get_global_id();
+           stream_ct1 << "\nsubgroup group id "
+             << item_ct1.get_sub_group().get_group_id() << sycl::endl;
+         });
+  });
+  dev_ct1.queues_wait_and_throw();
 }
