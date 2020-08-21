@@ -99,10 +99,10 @@ int main() {
                    sycl::access::target::local>
         co_acc_ct1(sycl::range<1>(1024), cgh);
 
-    cgh.parallel_for(
+cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)),
         [=](sycl::nd_item<3> item_ct1)
-        [[intel::reqd_sub_group_size(8)]]
+        __attribute__ ((intel_reqd_sub_group_size(8)))
          {
            stream_ct1 << "\nlocal id "
              << item_ct1.get_global_id();
