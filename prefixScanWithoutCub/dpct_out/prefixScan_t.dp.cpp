@@ -173,7 +173,7 @@ int main() {
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1) 
-        __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+        __attribute__ ((intel_reqd_sub_group_size(8)))
         {
           testWarpPrefixScan<int>(32, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -198,7 +198,7 @@ int main() {
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1) 
-        __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+        __attribute__ ((intel_reqd_sub_group_size(8)))
         {
           testWarpPrefixScan<int>(16, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -223,7 +223,7 @@ int main() {
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1)
-        __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+        __attribute__ ((intel_reqd_sub_group_size(8)))
         {
           testWarpPrefixScan<int>(5, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -255,7 +255,7 @@ int main() {
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
                                            sycl::range<3>(1, 1, bs)),
                          [=](sycl::nd_item<3> item_ct1)
-                         __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+                         __attribute__ ((intel_reqd_sub_group_size(8)))
                          {
                            testPrefixScan<uint16_t>(j, item_ct1, stream_ct1,
                                                     ws_acc_ct1.get_pointer(),
@@ -283,7 +283,7 @@ int main() {
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
                                            sycl::range<3>(1, 1, bs)),
                          [=](sycl::nd_item<3> item_ct1)
-                         __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+                         __attribute__ ((intel_reqd_sub_group_size(8)))
                          {
                            testPrefixScan<float>(j, item_ct1, stream_ct1,
                                                  ws_acc_ct1.get_pointer(),
@@ -331,7 +331,7 @@ int main() {
                                              sycl::range<3>(1, 1, nthreads),
                                          sycl::range<3>(1, 1, nthreads)),
                        [=](sycl::nd_item<3> item_ct1)
-                       __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+                       __attribute__ ((intel_reqd_sub_group_size(8)))
                        {
                          init(d_in, 1, num_items, item_ct1, stream_ct1);
                        });
@@ -366,7 +366,7 @@ int main() {
                                                sycl::range<3>(1, 1, nthreads),
                                            sycl::range<3>(1, 1, nthreads)),
                          [=](sycl::nd_item<3> item_ct1)
-                         __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+                         __attribute__ ((intel_reqd_sub_group_size(8)))
                          {
                            multiBlockPrefixScan<uint32_t>(
                                d_in, d_out1, num_items, d_pc, item_ct1,
@@ -388,7 +388,7 @@ int main() {
                                                sycl::range<3>(1, 1, nthreads),
                                            sycl::range<3>(1, 1, nthreads)),
                          [=](sycl::nd_item<3> item_ct1)
-                         __attribute__ ((intel_reqd_sub_group_size(dim_subgroup)))
+                         __attribute__ ((intel_reqd_sub_group_size(8)))
                          {
                            verify(d_out1, num_items, item_ct1, stream_ct1);
                          });
