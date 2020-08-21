@@ -22,6 +22,12 @@ run:
 run_cub:
 	./$(CUB_EXE_NAME)
 
+runcpu:
+	SYCL_DEVICE_TYPE=CPU ./$(EXE_NAME)
+
+runocl:
+	SYCL_BE=PI_OPENCL ./$(EXE_NAME)
+
 build_l:
 	$(CXX) $(CXXFLAGS) $(SOURCES) $(LINK_FLAG) -o $(EXE_NAME)
 
