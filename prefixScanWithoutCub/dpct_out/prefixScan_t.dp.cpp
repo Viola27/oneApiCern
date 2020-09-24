@@ -128,7 +128,7 @@ int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
            item_ct1.get_local_id(2);
   if (i < n)
     if (!(v[i] == i + 1)) {
-      stream_ct1 << "i = " << i << " v[i] = " << v[i] << " i+1 = " << i+1 << cl::sycl::endl;
+      //stream_ct1 << "i = " << i << " v[i] = " << v[i] << " i+1 = " << i+1 << cl::sycl::endl;
       return -1;
     }
   if (i == 0)
@@ -173,7 +173,7 @@ int main() {
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1) 
-        __attribute__ ((intel_reqd_sub_group_size(8)))
+        __attribute__ ((intel_reqd_sub_group_size(16)))
         {
           testWarpPrefixScan<int>(32, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -198,7 +198,7 @@ int main() {
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1) 
-        __attribute__ ((intel_reqd_sub_group_size(8)))
+        __attribute__ ((intel_reqd_sub_group_size(16)))
         {
           testWarpPrefixScan<int>(16, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -223,7 +223,7 @@ int main() {
     cgh.parallel_for(
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1)
-        __attribute__ ((intel_reqd_sub_group_size(8)))
+        __attribute__ ((intel_reqd_sub_group_size(16)))
         {
           testWarpPrefixScan<int>(5, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
@@ -255,7 +255,7 @@ int main() {
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
                                            sycl::range<3>(1, 1, bs)),
                          [=](sycl::nd_item<3> item_ct1)
-                         __attribute__ ((intel_reqd_sub_group_size(8)))
+                         __attribute__ ((intel_reqd_sub_group_size(16)))
                          {
                            testPrefixScan<uint16_t>(j, item_ct1, stream_ct1,
                                                     ws_acc_ct1.get_pointer(),
@@ -283,7 +283,7 @@ int main() {
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
                                            sycl::range<3>(1, 1, bs)),
                          [=](sycl::nd_item<3> item_ct1)
-                         __attribute__ ((intel_reqd_sub_group_size(8)))
+                         __attribute__ ((intel_reqd_sub_group_size(16)))
                          {
                            testPrefixScan<float>(j, item_ct1, stream_ct1,
                                                  ws_acc_ct1.get_pointer(),
@@ -298,7 +298,7 @@ int main() {
   dev_ct1.queues_wait_and_throw();
 
   std::cout << "multiblok" << std::endl;
-  int num_items = 200;
+  int num_items = 10;
   auto max_num_items = max_item_size_z * max_work_group_size;
   for (int ksize = 1; ksize < 4; ++ksize) {
     // test multiblock
