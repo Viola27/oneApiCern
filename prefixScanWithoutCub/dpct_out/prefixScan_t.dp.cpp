@@ -140,12 +140,7 @@ int verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1,
            item_ct1.get_local_id(2);
   if (i < n)
     if (!(v[i] == i + 1)) {
-<<<<<<< HEAD
       //stream_ct1 << "i = " << i << " v[i] = " << v[i] << " i+1 = " << i+1 << cl::sycl::endl;
-=======
-      stream_ct1 << "i = " << i << " v[i] = " << v[i] << " i+1 = " << i + 1
-                 << cl::sycl::endl;
->>>>>>> 0f56d5b3b581c569b08fa14f1f411cb0a6ee4295
       return -1;
     }
   if (i == 0)
@@ -193,16 +188,10 @@ int main() {
         co_acc_ct1(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
-<<<<<<< HEAD
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1) 
         __attribute__ ((intel_reqd_sub_group_size(16)))
         {
-=======
-        sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup),
-                          sycl::range<3>(1, 1, dim_subgroup)),
-        [=](sycl::nd_item<3> item_ct1) [[cl::intel_reqd_sub_group_size(16)]] {
->>>>>>> 0f56d5b3b581c569b08fa14f1f411cb0a6ee4295
           testWarpPrefixScan<int>(32, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
                                   co_acc_ct1.get_pointer());
@@ -223,16 +212,10 @@ int main() {
         co_acc_ct1(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
-<<<<<<< HEAD
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1) 
         __attribute__ ((intel_reqd_sub_group_size(16)))
         {
-=======
-        sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup),
-                          sycl::range<3>(1, 1, dim_subgroup)),
-        [=](sycl::nd_item<3> item_ct1) [[cl::intel_reqd_sub_group_size(16)]] {
->>>>>>> 0f56d5b3b581c569b08fa14f1f411cb0a6ee4295
           testWarpPrefixScan<int>(16, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
                                   co_acc_ct1.get_pointer());
@@ -253,16 +236,10 @@ int main() {
         co_acc_ct1(sycl::range<1>(1024), cgh);
 
     cgh.parallel_for(
-<<<<<<< HEAD
         sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup), sycl::range<3>(1, 1, dim_subgroup)),
         [=](sycl::nd_item<3> item_ct1)
         __attribute__ ((intel_reqd_sub_group_size(16)))
         {
-=======
-        sycl::nd_range<3>(sycl::range<3>(1, 1, dim_subgroup),
-                          sycl::range<3>(1, 1, dim_subgroup)),
-        [=](sycl::nd_item<3> item_ct1) [[cl::intel_reqd_sub_group_size(16)]] {
->>>>>>> 0f56d5b3b581c569b08fa14f1f411cb0a6ee4295
           testWarpPrefixScan<int>(5, item_ct1, stream_ct1,
                                   c_acc_ct1.get_pointer(),
                                   co_acc_ct1.get_pointer());
@@ -289,7 +266,6 @@ int main() {
                        sycl::access::target::local>
             co_acc_ct1(sycl::range<1>(1024), cgh);
 
-<<<<<<< HEAD
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
                                            sycl::range<3>(1, 1, bs)),
                          [=](sycl::nd_item<3> item_ct1)
@@ -301,17 +277,6 @@ int main() {
                                                     co_acc_ct1.get_pointer(),
                                                     dim_subgroup);
                          });
-=======
-        cgh.parallel_for(
-            sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
-                              sycl::range<3>(1, 1, bs)),
-            [=](sycl::nd_item<3> item_ct1)
-                [[cl::intel_reqd_sub_group_size(16)]] {
-                  testPrefixScan<uint16_t>(
-                      j, item_ct1, stream_ct1, ws_acc_ct1.get_pointer(),
-                      c_acc_ct1.get_pointer(), co_acc_ct1.get_pointer());
-                });
->>>>>>> 0f56d5b3b581c569b08fa14f1f411cb0a6ee4295
       });
       dev_ct1.queues_wait_and_throw();
 
@@ -329,7 +294,6 @@ int main() {
                        sycl::access::target::local>
             co_acc_ct1(sycl::range<1>(1024), cgh);
 
-<<<<<<< HEAD
         cgh.parallel_for(sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
                                            sycl::range<3>(1, 1, bs)),
                          [=](sycl::nd_item<3> item_ct1)
@@ -341,18 +305,6 @@ int main() {
                                                  co_acc_ct1.get_pointer(),
                                                  dim_subgroup);
                          });
-=======
-        cgh.parallel_for(
-            sycl::nd_range<3>(sycl::range<3>(1, 1, bs),
-                              sycl::range<3>(1, 1, bs)),
-            [=](sycl::nd_item<3> item_ct1)
-                [[cl::intel_reqd_sub_group_size(16)]] {
-                  testPrefixScan<float>(j, item_ct1, stream_ct1,
-                                        ws_acc_ct1.get_pointer(),
-                                        c_acc_ct1.get_pointer(),
-                                        co_acc_ct1.get_pointer());
-                });
->>>>>>> 0f56d5b3b581c569b08fa14f1f411cb0a6ee4295
       });
       dev_ct1.queues_wait_and_throw();
     }
