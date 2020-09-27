@@ -15,12 +15,12 @@
 3. run without-cub version on CPU
 
     ```
-	run_cpu
+	make run_cpu
     ```
 4. run without-cub version on openCL backend
 
     ```
-	run_ocl
+	make run_ocl
     ```
 ### clean project
 5. remove ```.exe``` file
