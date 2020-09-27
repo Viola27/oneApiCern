@@ -17,7 +17,7 @@ run:
 run_cpu:
 	SYCL_DEVICE_TYPE=CPU ./$(EXE_NAME)
 
-runocl:
+run_ocl:
 	SYCL_BE=PI_OPENCL ./$(EXE_NAME)
 
 build_cub:
