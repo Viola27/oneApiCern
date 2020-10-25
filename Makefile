@@ -1,11 +1,11 @@
 CXX = dpcpp
-CXXFLAGS = -O2 -g -std=c++17
+CXXFLAGS = -O2 -g -std=c++17 -Wno-ignored-attributes
 
 CUB_EXE_NAME = prefixScan_t_cub
 CUB_SOURCES = prefixScanCub/prefixScan_t.cpp
 
 EXE_NAME = prefixScan_t
-SOURCES = prefixScan_t.cpp
+SOURCES = prefixScan_new.cpp
 LINK_FLAG = /opt/intel/oneapi/compiler/latest/linux/lib/libsycl-glibc.o
 
 build:
