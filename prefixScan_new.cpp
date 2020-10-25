@@ -109,6 +109,7 @@ int main() try {
 
   auto subgroupSizes = stream.get_device().get_info<sycl::info::device::sub_group_sizes>();
   auto subgroupSize = std::min(16, (int) *std::end(subgroupSizes));
+  std::cout << "subgroupSize: " << subgroupSize;
 
   std::cout << "warp level" << std::endl;
   // std::cout << "warp 32" << std::endl;

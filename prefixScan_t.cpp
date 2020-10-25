@@ -3,9 +3,11 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "prefixScan.h"
+#include "prefixScan-old.h"
 
 using namespace cms::cuda;
+
+int dim_s = 16;
 
 template <typename T> struct format_traits {
 public:
@@ -165,15 +167,23 @@ int main() {
   std::cout << "\nmax work group sizes: " << max_work_group_size << std::endl;
 
   std::cout << "sub-group sizes: ";
-  auto dim_subgroup_values =
-      dev_ct1.get_info<sycl::info::device::sub_group_sizes>();
+  auto dim_subgroup_values = dev_ct1.get_info<sycl::info::device::sub_group_sizes>();
   for (int const &el : dim_subgroup_values) {
     std::cout << el << " ";
   }
-  int max_sub_group_size = *std::max_element(std::begin(dim_subgroup_values),
-                                             std::end(dim_subgroup_values));
+  int max_sub_group_size = *std::max_element(std::begin(dim_subgroup_values), std::end(dim_subgroup_values));
   int const dim_subgroup = std::min(16, max_sub_group_size);
   std::cout << "\ndim_subgroup: " << dim_subgroup << std::endl;
+
+
+  sycl::default_selector device_selector;
+  sycl::queue stream(device_selector); 
+
+  auto subgroupSizes = stream.get_device().get_info<sycl::info::device::sub_group_sizes>();
+  auto subgroupSize = std::min(16, (int) *std::end(subgroupSizes));
+  std::cout << "\nsubgroupSize " << subgroupSize << std::endl;
+  
+  
 
   std::cout << "\nwarp level" << std::endl;
   std::cout << "warp 32" << std::endl;
