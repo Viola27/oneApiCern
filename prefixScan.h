@@ -138,6 +138,7 @@ template <typename T>
 void multiBlockPrefixScan(T const* __restrict__ ci, T* __restrict__ co, int32_t size,
     int32_t* pc, sycl::nd_item<3> item, T* ws, bool* isLastBlockDone, T* psum, sycl::stream sycl_stream, int subgroup_size) {
   // first each block does a scan of size 1024; (better be enough blocks....)
+  
   //assert(1024 * gridDim.x >= size);
   if (item.get_local_range().get(2) * item.get_group_range().get(2) < size) {
     sycl_stream << "failed (multiBlockPrefixScan): item.get_local_range().get(2) * item.get_group_range.get(2) < size " << sycl::endl; 
@@ -153,7 +154,6 @@ void multiBlockPrefixScan(T const* __restrict__ ci, T* __restrict__ co, int32_t 
     auto value = sycl::atomic<int32_t>(sycl::global_ptr<int32_t>(pc)).fetch_add(1);  // block counter
     *isLastBlockDone = (value == (int(item.get_group_range(2)) - 1));
   }
-
   item.barrier();
 
   if (!(*isLastBlockDone))
@@ -171,9 +171,8 @@ void multiBlockPrefixScan(T const* __restrict__ ci, T* __restrict__ co, int32_t 
 
   // now it would have been handy to have the other blocks around...
   int first = item.get_local_id(2) + item.get_local_range().get(2);                                           // + blockDim.x * blockIdx.x
-  for (int i = first; i < size; i += item.get_local_range().get(2)) {  //  *gridDim.x) {
-    auto k = i / item.get_local_range().get(2);                                                            // block
-    co[i] += psum[k - 1];
+  for (int i = first, k = 0; i < size; i += item.get_local_range().get(2), ++k) {  //  *gridDim.x) {
+    co[i] += psum[k];
   }
 }
 

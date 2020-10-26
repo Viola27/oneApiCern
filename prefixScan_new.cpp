@@ -214,6 +214,11 @@ int main() try {
     uint32_t *d_out1;
     uint32_t *d_out2;
 
+    if (num_items > maxWorkItemSizes[2]){
+      std::cout << "Too many items " << num_items << " vs " << maxWorkItemSizes[2] << std::endl;
+      return num_items = maxWorkItemSizes[2];
+    }
+
     d_in = (uint32_t *) sycl::malloc_device(num_items * sizeof(uint32_t), stream.get_device(), stream.get_context());
     d_out1 = (uint32_t *) sycl::malloc_device(num_items * sizeof(uint32_t), stream.get_device(), stream.get_context());
     d_out2 = (uint32_t *) sycl::malloc_device(num_items * sizeof(uint32_t), stream.get_device(), stream.get_context());
