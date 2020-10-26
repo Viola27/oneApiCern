@@ -111,7 +111,7 @@ void verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item, sycl::stream s
   if (i < n){
     //assert(v[i] == i + 1);
     if (v[i] != i + 1) {
-      sycl_stream << "failed (verify): v[i] != i + 1 " << sycl::endl;
+      //sycl_stream << "failed (verify): v[i] != i + 1 " << sycl::endl;
       return;
     }
   }    
