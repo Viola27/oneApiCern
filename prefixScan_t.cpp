@@ -7,8 +7,6 @@
 
 using namespace cms::cuda;
 
-int dim_s = 16;
-
 template <typename T> struct format_traits {
 public:
   static const constexpr char *failed_msg = "failed %d %d %d: %d %d\n";
@@ -174,16 +172,6 @@ int main() {
   int max_sub_group_size = *std::max_element(std::begin(dim_subgroup_values), std::end(dim_subgroup_values));
   int const dim_subgroup = std::min(16, max_sub_group_size);
   std::cout << "\ndim_subgroup: " << dim_subgroup << std::endl;
-
-
-  sycl::default_selector device_selector;
-  sycl::queue stream(device_selector); 
-
-  auto subgroupSizes = stream.get_device().get_info<sycl::info::device::sub_group_sizes>();
-  auto subgroupSize = std::min(16, (int) *std::end(subgroupSizes));
-  std::cout << "\nsubgroupSize " << subgroupSize << std::endl;
-  
-  
 
   std::cout << "\nwarp level" << std::endl;
   std::cout << "warp 32" << std::endl;

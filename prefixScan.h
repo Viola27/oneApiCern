@@ -133,4 +133,48 @@ SYCL_EXTERNAL inline __attribute__((always_inline)) void blockPrefixScan(
   item.barrier();
 }
 
+// limited to 1024*1024 elements....
+template <typename T>
+void multiBlockPrefixScan(T const* __restrict__ ci, T* __restrict__ co, int32_t size,
+    int32_t* pc, sycl::nd_item<3> item, T* ws, bool* isLastBlockDone, T* psum, sycl::stream sycl_stream, int subgroup_size) {
+  // first each block does a scan of size 1024; (better be enough blocks....)
+  //assert(1024 * gridDim.x >= size);
+  if (item.get_local_range().get(2) * item.get_group_range().get(2) < size) {
+    sycl_stream << "failed (multiBlockPrefixScan): item.get_local_range().get(2) * item.get_group_range.get(2) < size " << sycl::endl; 
+    return;
+  }
+  int off = item.get_local_range().get(2) * item.get_group(2);
+  if (size - off > 0)
+    blockPrefixScan(ci + off, co + off, sycl::min((int) item.get_local_range(2), size - off), ws, item, sycl_stream, subgroup_size);
+  
+  // count blocks that finished
+
+  if (0 == item.get_local_id(2)) {
+    auto value = sycl::atomic<int32_t>(sycl::global_ptr<int32_t>(pc)).fetch_add(1);  // block counter
+    *isLastBlockDone = (value == (int(item.get_group_range(2)) - 1));
+  }
+
+  item.barrier();
+
+  if (!(*isLastBlockDone))
+    return;
+
+  // good each block has done its work and now we are left in last block
+
+  // let's get the partial sums from each block
+  for (int i = item.get_local_id(2), ni = item.get_group_range(2); i < ni; i += item.get_local_range().get(2)) {
+    auto j = item.get_local_range().get(2) * i + item.get_local_range().get(2) - 1;
+    psum[i] = (j < size) ? co[j] : T(0);
+  }
+  item.barrier();
+  blockPrefixScan(psum, psum, item.get_group_range(2), ws, item, sycl_stream, subgroup_size);
+
+  // now it would have been handy to have the other blocks around...
+  int first = item.get_local_id(2) + item.get_local_range().get(2);                                           // + blockDim.x * blockIdx.x
+  for (int i = first; i < size; i += item.get_local_range().get(2)) {  //  *gridDim.x) {
+    auto k = i / item.get_local_range().get(2);                                                            // block
+    co[i] += psum[k - 1];
+  }
+}
+
 #endif  // HeterogeneousCore_CUDAUtilities_interface_prefixScan_h
