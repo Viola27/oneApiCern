@@ -12,7 +12,7 @@ LINK_FLAG = /opt/intel/oneapi/compiler/latest/linux/lib/libsycl-glibc.o
 build:
 	$(CXX) $(CXXFLAGS) -o $(EXE_NAME) $(SOURCES)
 
-build:
+build-old:
 	$(CXX) $(CXXFLAGS) -o $(EXE_NAME) $(SOURCES_OLD)
 
 run:
