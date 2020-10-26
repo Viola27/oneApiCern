@@ -131,7 +131,8 @@ int main() try {
   auto maxWorkItemSize = std::min((int) maxWorkItemSizes[2], 1024);
 
   auto subgroupSizes = stream.get_device().get_info<sycl::info::device::sub_group_sizes>();
-  auto subgroupSize = std::min(16, (int) *std::end(subgroupSizes));
+  int maxSubgroupSizes = *std::max_element(std::begin(subgroupSizes), std::end(subgroupSizes));
+  auto subgroupSize = std::min(16, maxSubgroupSizes);
 
   std::cout << "warp level" << std::endl;
   // std::cout << "warp 32" << std::endl;
