@@ -205,7 +205,7 @@ int main() try {
   stream.wait();
 
   int num_items = 200;
-  for (int ksize = 1; ksize < 4; ++ksize) {
+  for (int ksize = 1; ksize < 3; ++ksize) {
     // test multiblock
     std::cout << "multiblok" << std::endl;
     // Declare, allocate, and initialize device-accessible pointers for input and output
@@ -213,11 +213,6 @@ int main() try {
     uint32_t *d_in;
     uint32_t *d_out1;
     uint32_t *d_out2;
-
-    if (num_items > maxWorkItemSizes[2]){
-      std::cout << "Too many items " << num_items << " vs " << maxWorkItemSizes[2] << std::endl;
-      return num_items = maxWorkItemSizes[2];
-    }
 
     d_in = (uint32_t *) sycl::malloc_device(num_items * sizeof(uint32_t), stream.get_device(), stream.get_context());
     d_out1 = (uint32_t *) sycl::malloc_device(num_items * sizeof(uint32_t), stream.get_device(), stream.get_context());
@@ -237,17 +232,19 @@ int main() try {
 
     // the block counter
     int32_t *d_pc;
-    d_pc = sycl::malloc_device<int32_t>(1, stream);
+    d_pc = (int32_t *) sycl::malloc_device(1, stream.get_device(), stream.get_context());
 
     nthreads = maxWorkItemSize;
     nblocks = (num_items + nthreads - 1) / nthreads;
 
+    std::cout << "nthreads: " << nthreads << " nblocks " << nblocks << " numitems " << num_items << std::endl;
+
     stream.submit([&](sycl::handler &cgh) {
       sycl::stream sycl_stream(64 * 1024, 80, cgh);
 
+      sycl::accessor<unsigned int, 1, sycl::access::mode::read_write, sycl::access::target::local> psum_acc(sycl::range(4 * nblocks), cgh);
       sycl::accessor<unsigned int, 1, sycl::access::mode::read_write, sycl::access::target::local> ws_acc(sycl::range(32), cgh);
       sycl::accessor<bool, 0, sycl::access::mode::read_write, sycl::access::target::local> isLastBlockDone_acc(cgh);
-      sycl::accessor<unsigned int, 1, sycl::access::mode::read_write, sycl::access::target::local> psum_acc(sycl::range(1024), cgh);
 
       cgh.parallel_for(
           sycl::nd_range(sycl::range(1, 1, nblocks) * sycl::range(1, 1, nthreads), sycl::range(1, 1, nthreads)), [=](sycl::nd_item<3> item) [[cl::intel_reqd_sub_group_size(16)]] {

@@ -133,11 +133,9 @@ SYCL_EXTERNAL inline __attribute__((always_inline)) void blockPrefixScan(
   item.barrier();
 }
 
-// limited to 1024*1024 elements....
 template <typename T>
-void multiBlockPrefixScan(T const* __restrict__ ci, T* __restrict__ co, int32_t size,
-    int32_t* pc, sycl::nd_item<3> item, T* ws, bool* isLastBlockDone, T* psum, sycl::stream sycl_stream, int subgroup_size) {
-  // first each block does a scan of size 1024; (better be enough blocks....)
+SYCL_EXTERNAL void multiBlockPrefixScan(
+    T *const ci, T *co, int32_t size, int32_t *pc, sycl::nd_item<3> item, T *ws, bool *isLastBlockDone, T *psum, sycl::stream sycl_stream, int subgroup_size) {
   
   //assert(1024 * gridDim.x >= size);
   if (item.get_local_range().get(2) * item.get_group_range().get(2) < size) {
@@ -147,7 +145,7 @@ void multiBlockPrefixScan(T const* __restrict__ ci, T* __restrict__ co, int32_t 
   int off = item.get_local_range().get(2) * item.get_group(2);
   if (size - off > 0)
     blockPrefixScan(ci + off, co + off, sycl::min((int) item.get_local_range(2), size - off), ws, item, sycl_stream, subgroup_size);
-  
+
   // count blocks that finished
 
   if (0 == item.get_local_id(2)) {
@@ -170,8 +168,7 @@ void multiBlockPrefixScan(T const* __restrict__ ci, T* __restrict__ co, int32_t 
   blockPrefixScan(psum, psum, item.get_group_range(2), ws, item, sycl_stream, subgroup_size);
 
   // now it would have been handy to have the other blocks around...
-  int first = item.get_local_id(2) + item.get_local_range().get(2);                                           // + blockDim.x * blockIdx.x
-  for (int i = first, k = 0; i < size; i += item.get_local_range().get(2), ++k) {  //  *gridDim.x) {
+  for (int i = item.get_local_id(2) + item.get_local_range().get(2), k = 0; i < size; i += item.get_local_range().get(2), ++k) {
     co[i] += psum[k];
   }
 }

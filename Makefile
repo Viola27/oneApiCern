@@ -6,10 +6,14 @@ CUB_SOURCES = prefixScanCub/prefixScan_t.cpp
 
 EXE_NAME = prefixScan_t
 SOURCES = prefixScan_new.cpp
+SOURCES_OLD = prefixScan_t.cpp
 LINK_FLAG = /opt/intel/oneapi/compiler/latest/linux/lib/libsycl-glibc.o
 
 build:
 	$(CXX) $(CXXFLAGS) -o $(EXE_NAME) $(SOURCES)
+
+build:
+	$(CXX) $(CXXFLAGS) -o $(EXE_NAME) $(SOURCES_OLD)
 
 run:
 	./$(EXE_NAME)
